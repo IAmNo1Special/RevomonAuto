@@ -31,9 +31,16 @@ class RevoAppController(BluepyllController, RevomonApp):
         self.last_action = None
         self.actions = Actions()
         self._auto_run_thread: Thread = Thread(
-            target=self._auto_run, daemon=True, name="GradexAgent(Auto-Run)"
+            target=self.run_from_battle, daemon=True, name="GradexAgent(Auto-Run)"
         )
+
+        # TODO: Scene detection needs to be finetuned before this can be used
+        # TODO: This should be ran only after it's confirm the user is logged in for the first time
+        # maybe...maybe there's a better way
         # self.sense_thread: Thread = Thread(target=self.sense, args=(), name="RevoController Senses", daemon=True)
+
+        # TODO: Scene detection needs to be finetuned before this can be used
+        # self.update_world_state(ignore_state_change_validation=True)
 
     def get_current_state(self) -> Action:
         """
@@ -422,6 +429,8 @@ class RevoAppController(BluepyllController, RevomonApp):
                     case MenuState.MAIN_MENU_CLOSED:
                         self.open_main_menu()
                 self.click_ui([ui.pvp_button], max_tries=1)
+                time.sleep(0.5)
+                self.click_ui([ui.exit_menu_button], max_tries=1)
             case _:
                 raise ValueError(f"Already in or queued for a battle!")
 
@@ -440,6 +449,8 @@ class RevoAppController(BluepyllController, RevomonApp):
                     case MenuState.MAIN_MENU_CLOSED:
                         self.open_main_menu()
                 self.click_ui([ui.pvp_button], max_tries=1)
+                time.sleep(0.5)
+                self.click_ui([ui.exit_menu_button], max_tries=1)
             case _:
                 raise ValueError(f"Not in a battle or queued for a battle!")
 
@@ -1072,12 +1083,15 @@ class RevoAppController(BluepyllController, RevomonApp):
         new_menu_state: MenuState | None = None,
         new_battle_state: BattleState | None = None,
         new_tv_state: TVState | None = None,
-    ):
+        ignore_state_change_validation: bool = False,
+    ) -> None:
 
         if new_app_state:
             match (self.app_state.current_state == new_app_state):
                 case False:
-                    self.app_state.transition_to(new_app_state)
+                    self.app_state.transition_to(
+                        new_app_state, ignore_validation=ignore_state_change_validation
+                    )
                     logger.info(f"App state updated to: {new_app_state}")
                 case True:
                     logger.info(f"App state is already: {new_app_state}")
@@ -1085,7 +1099,10 @@ class RevoAppController(BluepyllController, RevomonApp):
         if new_login_state:
             match (self.login_sm.current_state == new_login_state):
                 case False:
-                    self.login_sm.transition_to(new_login_state)
+                    self.login_sm.transition_to(
+                        new_login_state,
+                        ignore_validation=ignore_state_change_validation,
+                    )
                     logger.info(f"Login state updated to: {new_login_state}")
                 case True:
                     logger.info(f"Login state is already: {new_login_state}")
@@ -1093,7 +1110,9 @@ class RevoAppController(BluepyllController, RevomonApp):
         if new_menu_state:
             match (self.menu_sm.current_state == new_menu_state):
                 case False:
-                    self.menu_sm.transition_to(new_menu_state)
+                    self.menu_sm.transition_to(
+                        new_menu_state, ignore_validation=ignore_state_change_validation
+                    )
                     logger.info(f"Menu state updated to: {new_menu_state}")
                 case True:
                     logger.info(f"Menu state is already: {new_menu_state}")
@@ -1101,7 +1120,10 @@ class RevoAppController(BluepyllController, RevomonApp):
         if new_battle_state:
             match (self.battle_sm.current_state == new_battle_state):
                 case False:
-                    self.battle_sm.transition_to(new_battle_state)
+                    self.battle_sm.transition_to(
+                        new_battle_state,
+                        ignore_validation=ignore_state_change_validation,
+                    )
                     logger.info(f"Battle state updated to: {new_battle_state}")
                 case True:
                     logger.info(f"Battle state is already: {new_battle_state}")
@@ -1109,15 +1131,48 @@ class RevoAppController(BluepyllController, RevomonApp):
         if new_tv_state:
             match (self.tv_sm.current_state == new_tv_state):
                 case False:
-                    self.tv_sm.transition_to(new_tv_state)
+                    self.tv_sm.transition_to(
+                        new_tv_state, ignore_validation=ignore_state_change_validation
+                    )
                     logger.info(f"TV state updated to: {new_tv_state}")
                 case True:
                     logger.info(f"TV state is already: {new_tv_state}")
+        if not any(
+            [
+                new_app_state,
+                new_login_state,
+                new_menu_state,
+                new_battle_state,
+                new_tv_state,
+            ]
+        ):
+            logger.info("No state changes provided.")
+            logger.info(f"Scanning for current scene...")
+            if any(
+                [
+                    self.is_start_game_scene(True),
+                    self.is_login_scene(True),
+                    self.is_overworld_scene(True),
+                    self.is_tv_scene(True),
+                    self.is_menu_bag_scene(True),
+                    self.is_battle_bag_scene(True),
+                    self.is_main_menu_scene(True),
+                    self.is_in_battle_scene(True),
+                    self.is_attacks_menu_scene(True),
+                ]
+            ):
+                logger.info("Current scene detected. World state updated.")
+                logger.info(f"Detected scene: {self.curr_scene}")
+            else:
+                logger.info("New World State initialized.")
 
-    def is_start_game_scene(self) -> bool:
+    def is_start_game_scene(self, ignore_state_change_validation: bool = False) -> bool:
         """
         Checks if the Revomon app is in the start game scene(app open and loaded).
         Passing this check means the app is open and loaded.
+
+        Args:
+            ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
             bool: True if the app is in the start game scene, False otherwise.
@@ -1133,6 +1188,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                         new_menu_state=MenuState.MAIN_MENU_CLOSED,
                         new_battle_state=BattleState.NOT_IN_BATTLE,
                         new_tv_state=TVState.TV_CLOSED,
+                        ignore_state_change_validation=ignore_state_change_validation,
                     )
                     self.curr_scene = "start_game"
                     return True
@@ -1142,10 +1198,13 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             raise Exception(f"error during ' is_start_game_scene': {e}")
 
-    def is_login_scene(self) -> bool:
+    def is_login_scene(self, ignore_state_change_validation: bool = False) -> bool:
         """
         Checks if the Revomon app is in the login scene(app open, loaded and started).
         Passing this check means the app is open, loaded and started.
+
+        Args:
+            ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
             bool: True if the app is in the login scene, False otherwise.
@@ -1161,6 +1220,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                         new_menu_state=MenuState.MAIN_MENU_CLOSED,
                         new_battle_state=BattleState.NOT_IN_BATTLE,
                         new_tv_state=TVState.TV_CLOSED,
+                        ignore_state_change_validation=ignore_state_change_validation,
                     )
                     self.curr_scene = "login"
                     return True
@@ -1170,10 +1230,13 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             raise Exception(f"error during 'is_login_scene': {e}")
 
-    def is_overworld_scene(self) -> bool:
+    def is_overworld_scene(self, ignore_state_change_validation: bool = False) -> bool:
         """
         Checks if the Revomon app is in the overworld scene(no menu's are open and not in any battle).
         Passing this check means the app is open, loaded, started and the User is logged in.
+
+        Args:
+            ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
             bool: True if the app is in the overworld scene, False otherwise.
@@ -1194,6 +1257,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                         new_menu_state=MenuState.MAIN_MENU_CLOSED,
                         new_battle_state=new_battle_state,
                         new_tv_state=TVState.TV_CLOSED,
+                        ignore_state_change_validation=ignore_state_change_validation,
                     )
                     self.curr_scene = "overworld"
                     return True
@@ -1203,10 +1267,13 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             raise Exception(f"error during 'is_overworld_scene': {e}")
 
-    def is_tv_scene(self) -> bool:
+    def is_tv_scene(self, ignore_state_change_validation: bool = False) -> bool:
         """
         Checks if the Revomon app is in the TV scene(TV is open).
         Passing this check means the app is open, loaded, started, the User is logged in and the TV is open.
+
+        Args:
+            ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
             bool: True if the app is in the TV scene, False otherwise.
@@ -1220,6 +1287,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                         new_login_state=LoginState.LOGGED_IN,
                         new_menu_state=MenuState.MAIN_MENU_CLOSED,
                         new_tv_state=TVState.TV_OPEN,
+                        ignore_state_change_validation=ignore_state_change_validation,
                     )
                     self.curr_scene = "tv"
                     return True
@@ -1229,10 +1297,13 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             raise Exception(f"error during 'is_tv_scene': {e}")
 
-    def is_menu_bag_scene(self) -> bool:
+    def is_menu_bag_scene(self, ignore_state_change_validation: bool = False) -> bool:
         """
         Checks if the Revomon app is in the menu bag scene(menu bag is open).
         Passing this check means the app is open, loaded, started, the User is logged in and the menu bag is open.
+
+        Args:
+            ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
             bool: True if the app is in the menu bag scene, False otherwise.
@@ -1249,6 +1320,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                         new_login_state=LoginState.LOGGED_IN,
                         new_menu_state=MenuState.MENU_BAG_OPEN,
                         new_tv_state=TVState.TV_CLOSED,
+                        ignore_state_change_validation=ignore_state_change_validation,
                     )
                     self.curr_scene = "menu_bag"
                     return True
@@ -1258,11 +1330,14 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             raise Exception(f"error during 'is_menu_bag_scene': {e}")
 
-    def is_battle_bag_scene(self) -> bool:
+    def is_battle_bag_scene(self, ignore_state_change_validation: bool = False) -> bool:
         # TODO: Currently is same check as menu bag scene as the bag ui appears to be the same. Update to check for battle bag ui specific elements.
         """
         Checks if the Revomon app is in the battle bag scene(battle bag is open).
         Passing this check means the app is open, loaded, started, the User is logged in, in a battle and the battle bag is open.
+
+        Args:
+            ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
             bool: True if the app is in the battle bag scene, False otherwise.
@@ -1280,6 +1355,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                         new_menu_state=MenuState.MAIN_MENU_CLOSED,
                         new_battle_state=BattleState.BATTLE_BAG_OPEN,
                         new_tv_state=TVState.TV_CLOSED,
+                        ignore_state_change_validation=ignore_state_change_validation,
                     )
                     self.curr_scene = "battle_bag"
                     return True
@@ -1289,10 +1365,13 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             raise Exception(f"error during 'is_battle_bag_scene': {e}")
 
-    def is_main_menu_scene(self) -> bool:
+    def is_main_menu_scene(self, ignore_state_change_validation: bool = False) -> bool:
         """
         Checks if the Revomon app is in the main menu scene(main menu is open).
         Passing this check means the app is open, loaded, started, the User is logged in and the main menu is open.
+
+        Args:
+            ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
             bool: True if the app is in the main menu scene, False otherwise.
@@ -1306,6 +1385,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                         new_login_state=LoginState.LOGGED_IN,
                         new_menu_state=MenuState.MAIN_MENU_OPEN,
                         new_tv_state=TVState.TV_CLOSED,
+                        ignore_state_change_validation=ignore_state_change_validation,
                     )
                     self.curr_scene = "main_menu"
                     return True
@@ -1315,10 +1395,16 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             raise Exception(f"error during 'is_main_menu_scene': {e}")
 
-    def is_in_battle_scene(self) -> bool:
+    def is_in_battle_scene(
+        self,
+        ignore_state_change_validation: bool = False,
+    ) -> bool:
         """
         Checks if the Revomon app is in the in battle scene(User in battle).
         Passing this check means the app is open, loaded, started, the User is logged in, in a battle and the battle bag is closed.
+
+        Args:
+            ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
             bool: True if the app is in the in battle scene, False otherwise.
@@ -1346,6 +1432,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                         new_menu_state=MenuState.MAIN_MENU_CLOSED,
                         new_battle_state=BattleState.IN_BATTLE,
                         new_tv_state=TVState.TV_CLOSED,
+                        ignore_state_change_validation=ignore_state_change_validation,
                     )
                     self.curr_scene = "in_battle"
                     self.extract_initial_battle_info()
@@ -1357,10 +1444,15 @@ class RevoAppController(BluepyllController, RevomonApp):
             logger.error(f"Error getting battle info(is_in_battle_scene): {e}")
             return False
 
-    def is_attacks_menu_scene(self) -> bool:
+    def is_attacks_menu_scene(
+        self, ignore_state_change_validation: bool = False
+    ) -> bool:
         """
         Checks if the Revomon app is in the attacks menu scene(attacks menu is open).
         Passing this check means the app is open, loaded, started, the User is logged in, in a battle and the attacks menu is open.
+
+        Args:
+            ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
             bool: True if the app is in the attacks menu scene, False otherwise.
@@ -1379,6 +1471,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                         new_menu_state=MenuState.MAIN_MENU_CLOSED,
                         new_battle_state=BattleState.ATTACKS_MENU_OPEN,
                         new_tv_state=TVState.TV_CLOSED,
+                        ignore_state_change_validation=ignore_state_change_validation,
                     )
                     self.curr_scene = "attacks_menu"
                     self.extract_current_battle_moves_info()
@@ -1472,7 +1565,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                             new_battle_state=BattleState.IN_PVP_QUEUE,
                             new_tv_state=TVState.TV_CLOSED,
                         )
-                        self.curr_scene = "main_menu"
+                        self.curr_scene = "overworld"
                         return
                     case "exit_pvp_queue":
                         # TODO: Implement a way to tell if user is/isn't in pvp queue. For now, just assume the user exited the queue successfully.
@@ -1483,7 +1576,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                             new_battle_state=BattleState.NOT_IN_BATTLE,
                             new_tv_state=TVState.TV_CLOSED,
                         )
-                        self.curr_scene = "main_menu"
+                        self.curr_scene = "overworld"
                         return
                     case "toggle_auto_run":
                         return
@@ -1854,7 +1947,7 @@ class RevoAppController(BluepyllController, RevomonApp):
 
         return self.location, self.current_city
 
-    def reset(self, auto_update: bool = True) -> None:
+    def reset(self, auto_update: bool = False) -> None:
         self.curr_scene = None
         self.is_mon_recalled = None
         self.tv_current_page = 1
