@@ -1,38 +1,39 @@
-from threading import Thread
-from logging import getLogger
-import time
 import io
+import time
+from logging import getLogger
 from pathlib import Path
-
-from PIL import Image
+from threading import Thread
 
 from bluepyll.controller import BluepyllController
 from bluepyll.state_machine import AppLifecycleState
+from PIL import Image
 
-from revomonauto.models.revo_app import (
-    RevomonApp,
-    BattleState,
-    MenuState,
-    TVState
-)
 from revomonauto.models.action import Action, Actions, action
-from revomonauto.models.revo_app import LoginState
+from revomonauto.models.revo_app import (
+    BattleState,
+    LoginState,
+    MenuState,
+    RevomonApp,
+    TVState,
+)
 from revomonauto.revomon import revomon_ui as ui
 
-
 logger = getLogger(__name__)
+
 
 class RevoAppController(BluepyllController, RevomonApp):
     def __init__(self):
         # Initialize parent classes
         BluepyllController.__init__(self)
         RevomonApp.__init__(self)
-        
+
         # Initialize instance variables
         self.last_action = None
         self.actions = Actions()
-        self._auto_run_thread: Thread = Thread(target=self._auto_run, daemon=True, name="GradexAgent(Auto-Run)")
-        #self.sense_thread: Thread = Thread(target=self.sense, args=(), name="RevoController Senses", daemon=True)
+        self._auto_run_thread: Thread = Thread(
+            target=self._auto_run, daemon=True, name="GradexAgent(Auto-Run)"
+        )
+        # self.sense_thread: Thread = Thread(target=self.sense, args=(), name="RevoController Senses", daemon=True)
 
     def get_current_state(self) -> Action:
         """
@@ -41,7 +42,7 @@ class RevoAppController(BluepyllController, RevomonApp):
         Returns:
             dict: The current state of the app.
         """
-        return{
+        return {
             "current_scene": self.curr_scene,
             "tv_current_page": self.tv_current_page,
             "tv_slot_selceted": self.tv_slot_selected,
@@ -53,20 +54,24 @@ class RevoAppController(BluepyllController, RevomonApp):
             "login_state": self.login_sm.current_state,
             "menu_state": self.menu_sm.current_state,
             "battle_state": self.battle_sm.current_state,
-            "tv_state": self.tv_sm.current_state
+            "tv_state": self.tv_sm.current_state,
         }
-    
+
     def _auto_run(self):
         while self.is_auto_run.is_set():
             self.run_from_battle()
 
-    def extract_regions(self, position_x_sizes: list[tuple[tuple[int, int], tuple[int, int], str]], image: bytes | str) -> Image:
+    def extract_regions(
+        self,
+        position_x_sizes: list[tuple[tuple[int, int], tuple[int, int], str]],
+        image: bytes | str,
+    ) -> Image:
         """
         Extract a region from an image using position and size.
-        
+
         Args:
             position_x_sizes (list[tuple[tuple[int, int], tuple[int, int], str]]): List of tuples containing the position, size and the label of the element to extract.
-                
+
         Returns:
             Image: The extracted region as a PIL Image object
         """
@@ -81,31 +86,31 @@ class RevoAppController(BluepyllController, RevomonApp):
             top = position_x_size[0][1]
             right = left + position_x_size[1][0]
             bottom = top + position_x_size[1][1]
-            
+
             # Extract the region
             cropped_img = image.crop((left, top, right, bottom))
-            
+
             # Save to the repo battles directory: src/revomonauto/revomon/battles/
             battles_dir = Path(__file__).resolve().parent.parent / "revomon" / "battles"
             battles_dir.mkdir(parents=True, exist_ok=True)
             dest_path = battles_dir / f"{position_x_size[2]}.png"
             cropped_img.save(dest_path)
             cropped_imgs.append(cropped_img)
-        
+
         return cropped_imgs
 
     def extract_health_percentage(self, image_path: str, padding: int = 5) -> float:
         """
         Calculates the health percentage from a health bar image, ignoring padding.
-        It assumes anything not black is health and ignores a specified number of 
+        It assumes anything not black is health and ignores a specified number of
         pixels on the left and right sides.
-        
+
         Args:
             image_path (str): The file path to the image.
             padding (int): The number of pixels to ignore on each side.
-        
+
         Returns:
-            float: The percentage of health remaining (0.0 to 100.0), 
+            float: The percentage of health remaining (0.0 to 100.0),
                 or -1 if an error occurs.
         """
         try:
@@ -113,38 +118,38 @@ class RevoAppController(BluepyllController, RevomonApp):
                 img = img.convert("RGB")
                 width, height = img.size
                 pixels = img.load()
-                
+
                 health_pixels = 0
                 missing_health_pixels = 0
-                
+
                 # Scan a representative row of pixels in the middle of the image.
                 y_scan = height // 2
-                
+
                 # Adjust the range to ignore the padding on the left and right.
                 # We also ensure the width is large enough to handle the padding.
                 if width <= 2 * padding:
                     print("Error: Image width is too small to account for padding.")
                     return -1.0
-                    
+
                 for x in range(padding, width - padding):
                     r, g, b = pixels[x, y_scan]
-                    
+
                     # Assume any pixel that's not a shade of black is health.
                     if r < 50 and g < 50 and b < 50:
                         missing_health_pixels += 1
                     else:
                         health_pixels += 1
-                
+
                 total_pixels = health_pixels + missing_health_pixels
-                
+
                 if total_pixels == 0:
                     # Handle cases where the health bar might be entirely missing or unreadable.
                     return 0.0
-                
+
                 health_percentage = (health_pixels / total_pixels) * 100
-                
+
                 return health_percentage
-        
+
         except FileNotFoundError:
             print(f"Error: The file at {image_path} was not found.")
             return -1.0
@@ -159,18 +164,49 @@ class RevoAppController(BluepyllController, RevomonApp):
                 raise Exception("Failed to take screenshot")
 
             # Extract initial battle info
-            self.extract_regions(position_x_sizes=[
-                (ui.player1_mon_name_text.position, ui.player1_mon_name_text.size, ui.player1_mon_name_text.label),
-                (ui.player1_mon_lvl_text.position, ui.player1_mon_lvl_text.size, ui.player1_mon_lvl_text.label),
-                (ui.player1_mon_hp_text.position, ui.player1_mon_hp_text.size, ui.player1_mon_hp_text.label),
-                (ui.player2_mon_name_text.position, ui.player2_mon_name_text.size, ui.player2_mon_name_text.label),
-                (ui.player2_mon_lvl_text.position, ui.player2_mon_lvl_text.size, ui.player2_mon_lvl_text.label),
-                (ui.player2_mon_hp_text.position, ui.player2_mon_hp_text.size, ui.player2_mon_hp_text.label)
-            ], image=screenshot_bytes)
-            
+            self.extract_regions(
+                position_x_sizes=[
+                    (
+                        ui.player1_mon_name_text.position,
+                        ui.player1_mon_name_text.size,
+                        ui.player1_mon_name_text.label,
+                    ),
+                    (
+                        ui.player1_mon_lvl_text.position,
+                        ui.player1_mon_lvl_text.size,
+                        ui.player1_mon_lvl_text.label,
+                    ),
+                    (
+                        ui.player1_mon_hp_text.position,
+                        ui.player1_mon_hp_text.size,
+                        ui.player1_mon_hp_text.label,
+                    ),
+                    (
+                        ui.player2_mon_name_text.position,
+                        ui.player2_mon_name_text.size,
+                        ui.player2_mon_name_text.label,
+                    ),
+                    (
+                        ui.player2_mon_lvl_text.position,
+                        ui.player2_mon_lvl_text.size,
+                        ui.player2_mon_lvl_text.label,
+                    ),
+                    (
+                        ui.player2_mon_hp_text.position,
+                        ui.player2_mon_hp_text.size,
+                        ui.player2_mon_hp_text.label,
+                    ),
+                ],
+                image=screenshot_bytes,
+            )
+
             # Read text from the extracted regions
-            player1_mon_name = self.img_txt_checker.read_text(ui.player1_mon_name_text.path)
-            player1_mon_lvl = self.img_txt_checker.read_text(ui.player1_mon_lvl_text.path, allowlist="lvl1234567890 ")
+            player1_mon_name = self.img_txt_checker.read_text(
+                ui.player1_mon_name_text.path
+            )
+            player1_mon_lvl = self.img_txt_checker.read_text(
+                ui.player1_mon_lvl_text.path, allowlist="lvl1234567890 "
+            )
             for result in player1_mon_lvl:
                 if "lvl " in result:
                     level = result.strip("lvl ")
@@ -182,9 +218,13 @@ class RevoAppController(BluepyllController, RevomonApp):
                     if level.isdigit():
                         player1_mon_lvl = [f"lvl {level}"]
             percentage1 = self.extract_health_percentage(ui.player1_mon_hp_text.path)
-            
-            player2_mon_name = self.img_txt_checker.read_text(ui.player2_mon_name_text.path)
-            player2_mon_lvl = self.img_txt_checker.read_text(ui.player2_mon_lvl_text.path, allowlist="lvl1234567890 ")
+
+            player2_mon_name = self.img_txt_checker.read_text(
+                ui.player2_mon_name_text.path
+            )
+            player2_mon_lvl = self.img_txt_checker.read_text(
+                ui.player2_mon_lvl_text.path, allowlist="lvl1234567890 "
+            )
             for result in player2_mon_lvl:
                 if "lvl " in result:
                     level = result.strip("lvl ")
@@ -196,10 +236,14 @@ class RevoAppController(BluepyllController, RevomonApp):
                     if level.isdigit():
                         player2_mon_lvl = [f"lvl {level}"]
             percentage2 = self.extract_health_percentage(ui.player2_mon_hp_text.path)
-            
+
             logger.info("Initial battle info extracted successfully")
-            logger.info(f"ME: {player1_mon_name} {player1_mon_lvl} Health: {percentage1:.2f}%")
-            logger.info(f"OPPONENT: {player2_mon_name} {player2_mon_lvl} Health: {percentage2:.2f}%")
+            logger.info(
+                f"ME: {player1_mon_name} {player1_mon_lvl} Health: {percentage1:.2f}%"
+            )
+            logger.info(
+                f"OPPONENT: {player2_mon_name} {player2_mon_lvl} Health: {percentage2:.2f}%"
+            )
         except Exception as e:
             logger.error(f"Error extracting initial battle info: {e}")
 
@@ -210,10 +254,11 @@ class RevoAppController(BluepyllController, RevomonApp):
                 for result in move_data[2:]:
                     move_data[0] = f"{move_data[0]} {result}"
                 move_data = move_data[:2]
-            
+
             if move_data[1] in ["toho", "ioh1o", "oh1o"]:
                 move_data[1] = "10/10"
             return move_data
+
         try:
             screenshot_bytes = self.capture_screenshot()
             if not screenshot_bytes:
@@ -222,26 +267,52 @@ class RevoAppController(BluepyllController, RevomonApp):
             # Extract current battle moves info
             self.extract_regions(
                 position_x_sizes=[
-                (ui.player1_mon_move1_text.position, ui.player1_mon_move1_text.size, ui.player1_mon_move1_text.label),
-                (ui.player1_mon_move2_text.position, ui.player1_mon_move2_text.size, ui.player1_mon_move2_text.label),
-                (ui.player1_mon_move3_text.position, ui.player1_mon_move3_text.size, ui.player1_mon_move3_text.label),
-                (ui.player1_mon_move4_text.position, ui.player1_mon_move4_text.size, ui.player1_mon_move4_text.label)
+                    (
+                        ui.player1_mon_move1_text.position,
+                        ui.player1_mon_move1_text.size,
+                        ui.player1_mon_move1_text.label,
+                    ),
+                    (
+                        ui.player1_mon_move2_text.position,
+                        ui.player1_mon_move2_text.size,
+                        ui.player1_mon_move2_text.label,
+                    ),
+                    (
+                        ui.player1_mon_move3_text.position,
+                        ui.player1_mon_move3_text.size,
+                        ui.player1_mon_move3_text.label,
+                    ),
+                    (
+                        ui.player1_mon_move4_text.position,
+                        ui.player1_mon_move4_text.size,
+                        ui.player1_mon_move4_text.label,
+                    ),
                 ],
-                image=screenshot_bytes
+                image=screenshot_bytes,
             )
-            
+
             # Read text from the extracted regions
-            player1_mon_move1 = self.img_txt_checker.read_text(ui.player1_mon_move1_text.path)
+            player1_mon_move1 = self.img_txt_checker.read_text(
+                ui.player1_mon_move1_text.path
+            )
             player1_mon_move1 = process_move_data(player1_mon_move1)
-            player1_mon_move2 = self.img_txt_checker.read_text(ui.player1_mon_move2_text.path)
+            player1_mon_move2 = self.img_txt_checker.read_text(
+                ui.player1_mon_move2_text.path
+            )
             player1_mon_move2 = process_move_data(player1_mon_move2)
-            player1_mon_move3 = self.img_txt_checker.read_text(ui.player1_mon_move3_text.path)
+            player1_mon_move3 = self.img_txt_checker.read_text(
+                ui.player1_mon_move3_text.path
+            )
             player1_mon_move3 = process_move_data(player1_mon_move3)
-            player1_mon_move4 = self.img_txt_checker.read_text(ui.player1_mon_move4_text.path)
+            player1_mon_move4 = self.img_txt_checker.read_text(
+                ui.player1_mon_move4_text.path
+            )
             player1_mon_move4 = process_move_data(player1_mon_move4)
-            
+
             logger.info("Current battle moves info extracted successfully")
-            logger.info(f"MOVES: {player1_mon_move1} {player1_mon_move2} {player1_mon_move3} {player1_mon_move4}")
+            logger.info(
+                f"MOVES: {player1_mon_move1} {player1_mon_move2} {player1_mon_move3} {player1_mon_move4}"
+            )
         except Exception as e:
             logger.error(f"Error extracting current battle moves info: {e}")
 
@@ -278,13 +349,15 @@ class RevoAppController(BluepyllController, RevomonApp):
         Returns:
             Action (dict): The action object representing the action performed.
         """
-                
+
         # Wait for the app to be ready
         logger.info("Waiting for app to be ready...")
         max_attempts = 10
         for attempt in range(max_attempts):
             current_state = self.app_state.current_state
-            logger.info(f"Current app state: {current_state} state type: {type(current_state)} (attempt {attempt + 1}/{max_attempts})")
+            logger.info(
+                f"Current app state: {current_state} state type: {type(current_state)} (attempt {attempt + 1}/{max_attempts})"
+            )
             if current_state == AppLifecycleState.READY:
                 logger.info("App is ready")
                 break
@@ -297,7 +370,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                 match self.login_sm.current_state:
                     case LoginState.NOT_STARTED:
                         self.click_ui([ui.start_game_button], max_tries=1)
-      
+
     @action
     def log_in(self) -> Action:
         """
@@ -309,7 +382,7 @@ class RevoAppController(BluepyllController, RevomonApp):
         match self.login_sm.current_state:
             case LoginState.STARTED:
                 self.click_ui([ui.login_button, ui.relogin_button], max_tries=1)
-    
+
     @action
     def open_main_menu(self) -> Action:
         """
@@ -387,8 +460,8 @@ class RevoAppController(BluepyllController, RevomonApp):
                 self.is_auto_run.set()
                 self._auto_run_thread.start()
 
-    @action   
-    def run_from_battle(self) -> Action:        
+    @action
+    def run_from_battle(self) -> Action:
         """
         Runs from the current battle if the user is in battle.
 
@@ -832,7 +905,6 @@ class RevoAppController(BluepyllController, RevomonApp):
 
     @action
     def open_available_bag(self) -> Action:
-
         """
         Opens either the battle bag if the user is in battle,
         or the menu bag if the user is not in battle.
@@ -962,7 +1034,9 @@ class RevoAppController(BluepyllController, RevomonApp):
                             case TVState.TV_OPEN:
                                 print(f"SELECTING SLOT #: {slot_number}")
                                 if slot_number != self.tv_slot_selected:
-                                    self.click_coords(ui.tv_slots[slot_number - 1].center)
+                                    self.click_coords(
+                                        ui.tv_slots[slot_number - 1].center
+                                    )
                                     self.tv_slot_selected = slot_number - 1
                                     self.is_mon_selected = True
             case _:
@@ -991,8 +1065,15 @@ class RevoAppController(BluepyllController, RevomonApp):
                 raise ValueError(f"Not logged in!")
 
     # STATE UPDATE FUNCTIONS
-    def update_world_state(self, new_app_state: AppLifecycleState | None = None, new_login_state: LoginState | None = None, new_menu_state: MenuState | None = None, new_battle_state: BattleState | None = None, new_tv_state: TVState | None = None):
-        
+    def update_world_state(
+        self,
+        new_app_state: AppLifecycleState | None = None,
+        new_login_state: LoginState | None = None,
+        new_menu_state: MenuState | None = None,
+        new_battle_state: BattleState | None = None,
+        new_tv_state: TVState | None = None,
+    ):
+
         if new_app_state:
             match (self.app_state.current_state == new_app_state):
                 case False:
@@ -1041,12 +1122,18 @@ class RevoAppController(BluepyllController, RevomonApp):
         Returns:
             bool: True if the app is in the start game scene, False otherwise.
         """
-        #Start Game Screen Scene 
+        # Start Game Screen Scene
         try:
 
             match self.find_ui([ui.start_game_button], max_tries=1):
                 case tuple():
-                    self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.NOT_STARTED, new_menu_state=MenuState.MAIN_MENU_CLOSED, new_battle_state=BattleState.NOT_IN_BATTLE, new_tv_state=TVState.TV_CLOSED)
+                    self.update_world_state(
+                        new_app_state=AppLifecycleState.READY,
+                        new_login_state=LoginState.NOT_STARTED,
+                        new_menu_state=MenuState.MAIN_MENU_CLOSED,
+                        new_battle_state=BattleState.NOT_IN_BATTLE,
+                        new_tv_state=TVState.TV_CLOSED,
+                    )
                     self.curr_scene = "start_game"
                     return True
                 case _:
@@ -1063,19 +1150,25 @@ class RevoAppController(BluepyllController, RevomonApp):
         Returns:
             bool: True if the app is in the login scene, False otherwise.
         """
-        #Login Screen Scene
+        # Login Screen Scene
         try:
 
             match self.find_ui([ui.login_button, ui.relogin_button], max_tries=1):
                 case tuple():
-                    self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.STARTED, new_menu_state=MenuState.MAIN_MENU_CLOSED, new_battle_state=BattleState.NOT_IN_BATTLE, new_tv_state=TVState.TV_CLOSED)
+                    self.update_world_state(
+                        new_app_state=AppLifecycleState.READY,
+                        new_login_state=LoginState.STARTED,
+                        new_menu_state=MenuState.MAIN_MENU_CLOSED,
+                        new_battle_state=BattleState.NOT_IN_BATTLE,
+                        new_tv_state=TVState.TV_CLOSED,
+                    )
                     self.curr_scene = "login"
                     return True
                 case _:
                     return False
 
         except Exception as e:
-            raise Exception(f"error during 'is_login_scene': {e}")            
+            raise Exception(f"error during 'is_login_scene': {e}")
 
     def is_overworld_scene(self) -> bool:
         """
@@ -1090,8 +1183,18 @@ class RevoAppController(BluepyllController, RevomonApp):
 
             match self.find_ui([ui.main_menu_button], max_tries=1):
                 case tuple():
-                    new_battle_state = BattleState.IN_PVP_QUEUE if self.battle_sm.current_state == BattleState.IN_PVP_QUEUE else BattleState.NOT_IN_BATTLE
-                    self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.MAIN_MENU_CLOSED, new_battle_state=new_battle_state, new_tv_state=TVState.TV_CLOSED)
+                    new_battle_state = (
+                        BattleState.IN_PVP_QUEUE
+                        if self.battle_sm.current_state == BattleState.IN_PVP_QUEUE
+                        else BattleState.NOT_IN_BATTLE
+                    )
+                    self.update_world_state(
+                        new_app_state=AppLifecycleState.READY,
+                        new_login_state=LoginState.LOGGED_IN,
+                        new_menu_state=MenuState.MAIN_MENU_CLOSED,
+                        new_battle_state=new_battle_state,
+                        new_tv_state=TVState.TV_CLOSED,
+                    )
                     self.curr_scene = "overworld"
                     return True
                 case _:
@@ -1112,7 +1215,12 @@ class RevoAppController(BluepyllController, RevomonApp):
 
             match self.find_ui([ui.tv_advanced_search_button], max_tries=1):
                 case tuple():
-                    self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.MAIN_MENU_CLOSED, new_tv_state=TVState.TV_OPEN)
+                    self.update_world_state(
+                        new_app_state=AppLifecycleState.READY,
+                        new_login_state=LoginState.LOGGED_IN,
+                        new_menu_state=MenuState.MAIN_MENU_CLOSED,
+                        new_tv_state=TVState.TV_OPEN,
+                    )
                     self.curr_scene = "tv"
                     return True
                 case _:
@@ -1131,9 +1239,17 @@ class RevoAppController(BluepyllController, RevomonApp):
         """
         try:
 
-            match (self.find_ui([ui.change_bag_left_button], max_tries=1), self.find_ui([ui.change_bag_right_button], max_tries=1)):
+            match (
+                self.find_ui([ui.change_bag_left_button], max_tries=1),
+                self.find_ui([ui.change_bag_right_button], max_tries=1),
+            ):
                 case (tuple(), tuple()):
-                    self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.MENU_BAG_OPEN, new_tv_state=TVState.TV_CLOSED)
+                    self.update_world_state(
+                        new_app_state=AppLifecycleState.READY,
+                        new_login_state=LoginState.LOGGED_IN,
+                        new_menu_state=MenuState.MENU_BAG_OPEN,
+                        new_tv_state=TVState.TV_CLOSED,
+                    )
                     self.curr_scene = "menu_bag"
                     return True
                 case _:
@@ -1153,9 +1269,18 @@ class RevoAppController(BluepyllController, RevomonApp):
         """
         try:
 
-            match (self.find_ui([ui.change_bag_left_button], max_tries=1), self.find_ui([ui.change_bag_right_button], max_tries=1)):
+            match (
+                self.find_ui([ui.change_bag_left_button], max_tries=1),
+                self.find_ui([ui.change_bag_right_button], max_tries=1),
+            ):
                 case (tuple(), tuple()):
-                    self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.MAIN_MENU_CLOSED, new_battle_state=BattleState.BATTLE_BAG_OPEN, new_tv_state=TVState.TV_CLOSED)
+                    self.update_world_state(
+                        new_app_state=AppLifecycleState.READY,
+                        new_login_state=LoginState.LOGGED_IN,
+                        new_menu_state=MenuState.MAIN_MENU_CLOSED,
+                        new_battle_state=BattleState.BATTLE_BAG_OPEN,
+                        new_tv_state=TVState.TV_CLOSED,
+                    )
                     self.curr_scene = "battle_bag"
                     return True
                 case _:
@@ -1176,7 +1301,12 @@ class RevoAppController(BluepyllController, RevomonApp):
 
             match self.find_ui([ui.pvp_button], max_tries=1):
                 case tuple():
-                    self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.MAIN_MENU_OPEN, new_tv_state=TVState.TV_CLOSED)
+                    self.update_world_state(
+                        new_app_state=AppLifecycleState.READY,
+                        new_login_state=LoginState.LOGGED_IN,
+                        new_menu_state=MenuState.MAIN_MENU_OPEN,
+                        new_tv_state=TVState.TV_CLOSED,
+                    )
                     self.curr_scene = "main_menu"
                     return True
                 case _:
@@ -1196,11 +1326,27 @@ class RevoAppController(BluepyllController, RevomonApp):
         try:
             # Checking for the green in the Revomon name plates that appear during battle (Player1, Player2)
             match (
-                self.check_pixel_color(coords=ui.player1_mon_nameplate_pixel.position, target_color=ui.player1_mon_nameplate_pixel.pixel_color, image=self.capture_screenshot(), tolerance=5),
-                self.check_pixel_color(coords=ui.player2_mon_nameplate_pixel.position, target_color=ui.player2_mon_nameplate_pixel.pixel_color, image=self.capture_screenshot(), tolerance=5)
+                self.check_pixel_color(
+                    coords=ui.player1_mon_nameplate_pixel.position,
+                    target_color=ui.player1_mon_nameplate_pixel.pixel_color,
+                    image=self.capture_screenshot(),
+                    tolerance=5,
+                ),
+                self.check_pixel_color(
+                    coords=ui.player2_mon_nameplate_pixel.position,
+                    target_color=ui.player2_mon_nameplate_pixel.pixel_color,
+                    image=self.capture_screenshot(),
+                    tolerance=5,
+                ),
             ):
                 case (True, True):
-                    self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.MAIN_MENU_CLOSED, new_battle_state=BattleState.IN_BATTLE, new_tv_state=TVState.TV_CLOSED)
+                    self.update_world_state(
+                        new_app_state=AppLifecycleState.READY,
+                        new_login_state=LoginState.LOGGED_IN,
+                        new_menu_state=MenuState.MAIN_MENU_CLOSED,
+                        new_battle_state=BattleState.IN_BATTLE,
+                        new_tv_state=TVState.TV_CLOSED,
+                    )
                     self.curr_scene = "in_battle"
                     self.extract_initial_battle_info()
                     return True
@@ -1220,9 +1366,20 @@ class RevoAppController(BluepyllController, RevomonApp):
             bool: True if the app is in the attacks menu scene, False otherwise.
         """
         try:
-            match self.check_pixel_color(coords=ui.exit_attacks_button_pixel.position, target_color=ui.exit_attacks_button_pixel.pixel_color, image=self.capture_screenshot(), tolerance=5):
+            match self.check_pixel_color(
+                coords=ui.exit_attacks_button_pixel.position,
+                target_color=ui.exit_attacks_button_pixel.pixel_color,
+                image=self.capture_screenshot(),
+                tolerance=5,
+            ):
                 case True:
-                    self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.MAIN_MENU_CLOSED, new_battle_state=BattleState.ATTACKS_MENU_OPEN, new_tv_state=TVState.TV_CLOSED)
+                    self.update_world_state(
+                        new_app_state=AppLifecycleState.READY,
+                        new_login_state=LoginState.LOGGED_IN,
+                        new_menu_state=MenuState.MAIN_MENU_CLOSED,
+                        new_battle_state=BattleState.ATTACKS_MENU_OPEN,
+                        new_tv_state=TVState.TV_CLOSED,
+                    )
                     self.curr_scene = "attacks_menu"
                     self.extract_current_battle_moves_info()
                     return True
@@ -1251,7 +1408,13 @@ class RevoAppController(BluepyllController, RevomonApp):
                             case True:
                                 continue
                             case False:
-                                self.update_world_state(new_app_state=AppLifecycleState.CLOSED, new_login_state=LoginState.NOT_STARTED, new_menu_state=MenuState.MAIN_MENU_CLOSED, new_battle_state=BattleState.NOT_IN_BATTLE, new_tv_state=TVState.TV_CLOSED)
+                                self.update_world_state(
+                                    new_app_state=AppLifecycleState.CLOSED,
+                                    new_login_state=LoginState.NOT_STARTED,
+                                    new_menu_state=MenuState.MAIN_MENU_CLOSED,
+                                    new_battle_state=BattleState.NOT_IN_BATTLE,
+                                    new_tv_state=TVState.TV_CLOSED,
+                                )
                                 self.curr_scene = None
                                 logger.info("Revomon app closed successfully.")
                                 return
@@ -1302,12 +1465,24 @@ class RevoAppController(BluepyllController, RevomonApp):
                                                 continue
                     case "enter_pvp_queue":
                         # TODO: Implement a way to tell if user is/isn't in pvp queue. For now, just assume the user joined the queue successfully.
-                        self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.MAIN_MENU_OPEN, new_battle_state=BattleState.IN_PVP_QUEUE, new_tv_state=TVState.TV_CLOSED)
+                        self.update_world_state(
+                            new_app_state=AppLifecycleState.READY,
+                            new_login_state=LoginState.LOGGED_IN,
+                            new_menu_state=MenuState.MAIN_MENU_OPEN,
+                            new_battle_state=BattleState.IN_PVP_QUEUE,
+                            new_tv_state=TVState.TV_CLOSED,
+                        )
                         self.curr_scene = "main_menu"
                         return
                     case "exit_pvp_queue":
                         # TODO: Implement a way to tell if user is/isn't in pvp queue. For now, just assume the user exited the queue successfully.
-                        self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.MAIN_MENU_OPEN, new_battle_state=BattleState.NOT_IN_BATTLE, new_tv_state=TVState.TV_CLOSED)
+                        self.update_world_state(
+                            new_app_state=AppLifecycleState.READY,
+                            new_login_state=LoginState.LOGGED_IN,
+                            new_menu_state=MenuState.MAIN_MENU_OPEN,
+                            new_battle_state=BattleState.NOT_IN_BATTLE,
+                            new_tv_state=TVState.TV_CLOSED,
+                        )
                         self.curr_scene = "main_menu"
                         return
                     case "toggle_auto_run":
@@ -1318,10 +1493,10 @@ class RevoAppController(BluepyllController, RevomonApp):
                                 return
                             case False:
                                 match self.is_login_scene():
-                                            case True:
-                                                return
-                                            case False:
-                                                continue
+                                    case True:
+                                        return
+                                    case False:
+                                        continue
                     case "open_menu_bag":
                         match self.is_menu_bag_scene():
                             case True:
@@ -1352,7 +1527,13 @@ class RevoAppController(BluepyllController, RevomonApp):
                                                 continue
                     case "open_wardrobe":
                         # TODO: Implement a way to tell if user is/isn't in wardrobe. For now, just assume the user opened the wardrobe successfully.
-                        self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.WARDROBE_OPEN, new_battle_state=BattleState.NOT_IN_BATTLE, new_tv_state=TVState.TV_CLOSED)
+                        self.update_world_state(
+                            new_app_state=AppLifecycleState.READY,
+                            new_login_state=LoginState.LOGGED_IN,
+                            new_menu_state=MenuState.WARDROBE_OPEN,
+                            new_battle_state=BattleState.NOT_IN_BATTLE,
+                            new_tv_state=TVState.TV_CLOSED,
+                        )
                         self.curr_scene = "wardrobe_menu"
                         return
                     case "close_wardrobe":
@@ -1370,11 +1551,17 @@ class RevoAppController(BluepyllController, RevomonApp):
                                             case False:
                                                 continue
                     case "recall_revomon":
-                        #TODO:
+                        # TODO:
                         self.is_mon_recalled = True
                         return
                     case "open_friends_list":
-                        self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.FRIENDS_LIST_OPEN, new_battle_state=BattleState.NOT_IN_BATTLE, new_tv_state=TVState.TV_CLOSED)
+                        self.update_world_state(
+                            new_app_state=AppLifecycleState.READY,
+                            new_login_state=LoginState.LOGGED_IN,
+                            new_menu_state=MenuState.FRIENDS_LIST_OPEN,
+                            new_battle_state=BattleState.NOT_IN_BATTLE,
+                            new_tv_state=TVState.TV_CLOSED,
+                        )
                         self.curr_scene = "friends_list_menu"
                         return
                     case "close_friends_list":
@@ -1392,7 +1579,13 @@ class RevoAppController(BluepyllController, RevomonApp):
                                             case False:
                                                 continue
                     case "open_settings":
-                        self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.SETTINGS_OPEN, new_battle_state=BattleState.NOT_IN_BATTLE, new_tv_state=TVState.TV_CLOSED)
+                        self.update_world_state(
+                            new_app_state=AppLifecycleState.READY,
+                            new_login_state=LoginState.LOGGED_IN,
+                            new_menu_state=MenuState.SETTINGS_OPEN,
+                            new_battle_state=BattleState.NOT_IN_BATTLE,
+                            new_tv_state=TVState.TV_CLOSED,
+                        )
                         self.curr_scene = "settings_menu"
                         return
                     case "close_settings":
@@ -1410,7 +1603,13 @@ class RevoAppController(BluepyllController, RevomonApp):
                                             case False:
                                                 continue
                     case "open_revodex":
-                        self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.REVODEX_OPEN, new_battle_state=BattleState.NOT_IN_BATTLE, new_tv_state=TVState.TV_CLOSED)
+                        self.update_world_state(
+                            new_app_state=AppLifecycleState.READY,
+                            new_login_state=LoginState.LOGGED_IN,
+                            new_menu_state=MenuState.REVODEX_OPEN,
+                            new_battle_state=BattleState.NOT_IN_BATTLE,
+                            new_tv_state=TVState.TV_CLOSED,
+                        )
                         self.curr_scene = "revodex_menu"
                         return
                     case "close_revodex":
@@ -1428,7 +1627,13 @@ class RevoAppController(BluepyllController, RevomonApp):
                                             case False:
                                                 continue
                     case "open_market":
-                        self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.MARKET_OPEN, new_battle_state=BattleState.NOT_IN_BATTLE, new_tv_state=TVState.TV_CLOSED)
+                        self.update_world_state(
+                            new_app_state=AppLifecycleState.READY,
+                            new_login_state=LoginState.LOGGED_IN,
+                            new_menu_state=MenuState.MARKET_OPEN,
+                            new_battle_state=BattleState.NOT_IN_BATTLE,
+                            new_tv_state=TVState.TV_CLOSED,
+                        )
                         self.curr_scene = "market_menu"
                         return
                     case "close_market":
@@ -1446,7 +1651,13 @@ class RevoAppController(BluepyllController, RevomonApp):
                                             case False:
                                                 continue
                     case "open_discussion":
-                        self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.DISCUSSION_OPEN, new_battle_state=BattleState.NOT_IN_BATTLE, new_tv_state=TVState.TV_CLOSED)
+                        self.update_world_state(
+                            new_app_state=AppLifecycleState.READY,
+                            new_login_state=LoginState.LOGGED_IN,
+                            new_menu_state=MenuState.DISCUSSION_OPEN,
+                            new_battle_state=BattleState.NOT_IN_BATTLE,
+                            new_tv_state=TVState.TV_CLOSED,
+                        )
                         self.curr_scene = "discussion_menu"
                         return
                     case "close_discussion":
@@ -1464,7 +1675,13 @@ class RevoAppController(BluepyllController, RevomonApp):
                                             case False:
                                                 continue
                     case "open_clan":
-                        self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.CLAN_OPEN, new_battle_state=BattleState.NOT_IN_BATTLE, new_tv_state=TVState.TV_CLOSED)
+                        self.update_world_state(
+                            new_app_state=AppLifecycleState.READY,
+                            new_login_state=LoginState.LOGGED_IN,
+                            new_menu_state=MenuState.CLAN_OPEN,
+                            new_battle_state=BattleState.NOT_IN_BATTLE,
+                            new_tv_state=TVState.TV_CLOSED,
+                        )
                         self.curr_scene = "clan_menu"
                         return
                     case "close_clan":
@@ -1480,47 +1697,47 @@ class RevoAppController(BluepyllController, RevomonApp):
                                             case True:
                                                 return
                                             case False:
-                                                continue                      
+                                                continue
                     case "open_attacks_menu":
                         match self.is_attacks_menu_scene():
                             case True:
                                 return
                             case False:
                                 match self.is_login_scene():
-                                            case True:
-                                                return
-                                            case False:
-                                                continue
+                                    case True:
+                                        return
+                                    case False:
+                                        continue
                     case "close_attacks_menu":
                         match self.is_in_battle_scene():
                             case True:
                                 return
                             case False:
                                 match self.is_login_scene():
-                                            case True:
-                                                return
-                                            case False:
-                                                continue
+                                    case True:
+                                        return
+                                    case False:
+                                        continue
                     case "open_battle_bag":
                         match self.is_battle_bag_scene():
                             case True:
                                 return
                             case False:
                                 match self.is_login_scene():
-                                            case True:
-                                                return
-                                            case False:
-                                                continue
+                                    case True:
+                                        return
+                                    case False:
+                                        continue
                     case "close_battle_bag":
                         match self.is_in_battle_scene():
                             case True:
                                 return
                             case False:
                                 match self.is_login_scene():
-                                            case True:
-                                                return
-                                            case False:
-                                                continue
+                                    case True:
+                                        return
+                                    case False:
+                                        continue
                     case "open_available_bag":
                         match self.is_menu_bag_scene():
                             case True:
@@ -1582,23 +1799,41 @@ class RevoAppController(BluepyllController, RevomonApp):
                                             case False:
                                                 continue
                     case "tv_search_for_revomon":
-                        self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.MAIN_MENU_CLOSED, new_battle_state=BattleState.NOT_IN_BATTLE, new_tv_state=TVState.SEARCHING_MON)
+                        self.update_world_state(
+                            new_app_state=AppLifecycleState.READY,
+                            new_login_state=LoginState.LOGGED_IN,
+                            new_menu_state=MenuState.MAIN_MENU_CLOSED,
+                            new_battle_state=BattleState.NOT_IN_BATTLE,
+                            new_tv_state=TVState.SEARCHING_MON,
+                        )
                         self.curr_scene = "tv"
                         return
                     case "tv_select_revomon":
-                        self.update_world_state(new_app_state=AppLifecycleState.READY, new_login_state=LoginState.LOGGED_IN, new_menu_state=MenuState.MAIN_MENU_CLOSED, new_battle_state=BattleState.NOT_IN_BATTLE, new_tv_state=TVState.MON_SELECTED)
+                        self.update_world_state(
+                            new_app_state=AppLifecycleState.READY,
+                            new_login_state=LoginState.LOGGED_IN,
+                            new_menu_state=MenuState.MAIN_MENU_CLOSED,
+                            new_battle_state=BattleState.NOT_IN_BATTLE,
+                            new_tv_state=TVState.MON_SELECTED,
+                        )
                         self.curr_scene = "tv"
                         return
                     case "quit_game":
                         match not self.is_app_running(app=self):
                             case True:
-                                self.update_world_state(new_app_state=AppLifecycleState.CLOSED, new_login_state=LoginState.NOT_STARTED, new_menu_state=MenuState.MAIN_MENU_CLOSED, new_battle_state=BattleState.NOT_IN_BATTLE, new_tv_state=TVState.TV_CLOSED)
+                                self.update_world_state(
+                                    new_app_state=AppLifecycleState.CLOSED,
+                                    new_login_state=LoginState.NOT_STARTED,
+                                    new_menu_state=MenuState.MAIN_MENU_CLOSED,
+                                    new_battle_state=BattleState.NOT_IN_BATTLE,
+                                    new_tv_state=TVState.TV_CLOSED,
+                                )
                                 return
                             case False:
                                 continue
                     case _:
                         raise ValueError(f"Invalid action: {action}")
-            
+
         except Exception as e:
             raise Exception(f"Error waiting for action: {e}")
 

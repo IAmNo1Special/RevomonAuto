@@ -211,7 +211,6 @@ if __name__ == "__main__":
         logger.info("Closing battle bag...")
         controller.close_battle_bag()
 
-
         input("Press Enter to continue...")
 
         logger.info("Running from battle...")
@@ -222,11 +221,11 @@ if __name__ == "__main__":
         logger.info("Quting game...")
         controller.quit_game()
 
-        #logger.info("Closing app...")
-        #print(controller.close_app(app=controller))
+        # logger.info("Closing app...")
+        # print(controller.close_app(app=controller))
 
-        #logger.info("Killing Bluestacks...")
-        #print(controller.kill_bluestacks())
+        # logger.info("Killing Bluestacks...")
+        # print(controller.kill_bluestacks())
 
         logger.info("Controller Test: PASSED!")
 
