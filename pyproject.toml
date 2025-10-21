@@ -8,7 +8,7 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "bluepyll>=0.0.5",
+    "bluepyll>=0.0.9",
     "pillow>=11.3.0",
 ]
 
