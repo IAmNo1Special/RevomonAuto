@@ -10,7 +10,6 @@ from .capsules_client import CapsulesClient
 from .natures_client import NaturesClient
 from .counterdex_client import CounterdexClient
 from .fruitys_client import FruitysClient
-from .owned_lands_client import OwnedLandsClient
 from .revomon_moves_client import RevomonMovesClient
 from .locations_client import LocationsClient
 from .battle_mechanics_client import BattleMechanicsClient
@@ -29,7 +28,6 @@ __all__ = [
     "NaturesClient",
     "CounterdexClient",
     "FruitysClient",
-    "OwnedLandsClient",
     "RevomonMovesClient",
     "LocationsClient",
     "BattleMechanicsClient",
