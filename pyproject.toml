@@ -1,7 +1,7 @@
 [project]
 name = "revomonauto"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2.0"
+description = "Automation helpers for the Revomon Android game running under BlueStacks, built on top of the Bluepyll automation framework."
 readme = "README.md"
 authors = [
     { name = "Malcom Godlike", email = "ivmno1special@gmail.com" }
