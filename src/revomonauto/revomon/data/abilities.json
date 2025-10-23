@@ -1,0 +1,378 @@
+[
+    {
+        "name": "adaptability",
+        "description": "this revomon's same-type attack bonus (stab) is 2 instead of 1.5."
+    },
+    {
+        "name": "aftermath",
+        "description": "the foe that dealt the final hit loses 1/4 of it's maximum hp if the move made physical contact."
+    },
+    {
+        "name": "anger point",
+        "description": "increases attack to maximum level upon taking a critical hit."
+    },
+    {
+        "name": "bad dreams",
+        "description": "at the end of each turn, each adjacent sleeping opponent takes damage equal to 1/8 of it's maximum hp."
+    },
+    {
+        "name": "battery",
+        "description": "this ability raises the power of allies' special moves by 30%"
+    },
+    {
+        "name": "battle armor",
+        "description": "battle armor prevents the opponent from landing a critical hit."
+    },
+    {
+        "name": "big pecks",
+        "description": "prevents other revomon from lowering this revomon's defense stat stage."
+    },
+    {
+        "name": "blaze",
+        "description": "blaze increases the power of fire-type moves by 50% (1.5\u00d7) when the ability-bearer's hp falls below a third of it's maximum (known in-game as in a pinch)."
+    },
+    {
+        "name": "chlorophyll",
+        "description": "chlorophyll doubles the ability-bearer's speed during bright sunshine."
+    },
+    {
+        "name": "clear body",
+        "description": "prevents other revomon from lowering it's stats."
+    },
+    {
+        "name": "cloud nine",
+        "description": "cloud nine suppresses all effects brought on by weather, including move power increases, end-of-turn damage, accuracy changes, relevant abilities and so on."
+    },
+    {
+        "name": "competitive",
+        "description": "raises the ability-bearer's special attack by two stages when hit by a stat-lowering move."
+    },
+    {
+        "name": "cursed body",
+        "description": "if this revomon is hit by an attack, there is a 30% chance that move gets disabled unless one of the attacker's moves is already disabled."
+    },
+    {
+        "name": "cute charm",
+        "description": "30% chance of infatuating revomon of the opposite gender if they make contact."
+    },
+    {
+        "name": "damp",
+        "description": "damp prevents all revomon on the field from using the moves selfdestruct and explosion. it also prevents damage (to the damp revomon only) from the ability aftermath."
+    },
+    {
+        "name": "dark aura",
+        "description": "while this revomon is active, a twilight move used by any revomon has 1.33x power."
+    },
+    {
+        "name": "defiant",
+        "description": "defiant raises the ability-bearer's attack by two stages when hit by a stat-lowering move."
+    },
+    {
+        "name": "drizzle",
+        "description": "on switch-in, this revomon summons rain dance."
+    },
+    {
+        "name": "flame body",
+        "description": "if a revomon with flame body is hit by a move that makes contact, there is a 30% chance the attacker will become burned."
+    },
+    {
+        "name": "flare boost",
+        "description": "while this revomon is burned, it's special attacks have 1.5x power."
+    },
+    {
+        "name": "flash fire",
+        "description": "when a revomon with flash fire is hit by a fire-type move, it does not deal damage but instead raises the power of the bearer's fire-type moves by 50%. subsequent hits do not raise the power even more, but the effect remains while the ability-bearer is in battle."
+    },
+    {
+        "name": "friend guard",
+        "description": "this revomon's allies receive 3/4 damage from other revomon's attacks."
+    },
+    {
+        "name": "gluttony",
+        "description": "a revomon with gluttony will use a pinch berry when it's hp drops to 50%, rather than the usual 25%."
+    },
+    {
+        "name": "guts",
+        "description": "guts raises the ability-bearer's attack by 50% when inflicted by a major status ailment (toxic, burn, paralysis, freeze or sleep). if burnt, the revomon does not suffer the usual drop in attack."
+    },
+    {
+        "name": "harvest",
+        "description": "if last item used is a berry, 50% chance to restore it each end of turn. 100% in sun."
+    },
+    {
+        "name": "healer",
+        "description": "30% chance of curing an adjacent ally's status at the end of each turn."
+    },
+    {
+        "name": "honey gather",
+        "description": "when a battle ends, any party revomon with honey gather may pick up honey as a held item (if they are not already holding an item)."
+    },
+    {
+        "name": "hustle",
+        "description": "hustle increases the ability-bearer's attack by 50%, however, it also reduces the accuracy of all physical moves by 20%."
+    },
+    {
+        "name": "hyper cutter",
+        "description": "hyper cutter prevents the bearer's attack stat from being lowered by other revomon, through moves such as growl or abilities such as intimidate. it does not prevent self-inflicted decreases, for example from superpower."
+    },
+    {
+        "name": "infiltrator",
+        "description": "moves ignore substitutes and foe's reflect/light screen/safeguard/mist/aurora veil."
+    },
+    {
+        "name": "inner focus",
+        "description": "inner focus prevents the revomon from flinching."
+    },
+    {
+        "name": "insomnia",
+        "description": "prevents the revomon from falling asleep."
+    },
+    {
+        "name": "intimidate",
+        "description": "intimidate lower's the attack of all opponents by one stage when the ability-bearer switches in (including the start of a battle)."
+    },
+    {
+        "name": "iron fist",
+        "description": "iron fist increases the power of all punching moves by 20%."
+    },
+    {
+        "name": "keen eye",
+        "description": "keen eye prevents the revomon from losing accuracy, for example from moves like sand-attack."
+    },
+    {
+        "name": "klutz",
+        "description": "the revomon can't use any held items."
+    },
+    {
+        "name": "leaf guard",
+        "description": "leaf guard prevents the bearer from succumbing to major status ailments (sleep, burns, toxicing, paralysis or freezing) during sunny weather. it does not prevent minor status ailments such as confusion or infatuation, nor does it prevent self-inflicted status conditions such as from using rest."
+    },
+    {
+        "name": "levitate",
+        "description": "levitate causes the revomon to be raised (like sky-type revomon). raised revomon are not affected by earth-type moves, spikes, toxic spikes nor arena trap."
+    },
+    {
+        "name": "light metal",
+        "description": "this revomon's weight is halved."
+    },
+    {
+        "name": "lightning rod",
+        "description": "this revomon draws electric moves to itself to raise sp. atk by 1; electric immunity."
+    },
+    {
+        "name": "magic bounce",
+        "description": "magic bounce reflects the effect of all stat-lowering status moves (excluding memento), status condition-inducing status moves, entry hazard moves, moves like taunt and torment, and so on back to the user. magic bounce reflects the same moves that magic coat does."
+    },
+    {
+        "name": "marvel scale",
+        "description": "marvel scale raises the ability-bearer's defense by 50% when inflicted by a major status ailment (toxic, burn, paralysis, freeze or sleep). all effects of the status condition remain, e.g. losing hp each turn (toxic, burn), speed drop (paralysis) or being unable to attack (paralysis, freeze, sleep)."
+    },
+    {
+        "name": "multiscale",
+        "description": "if this revomon is at full hp, damage taken from attacks is halved."
+    },
+    {
+        "name": "natural cure",
+        "description": "all status problems heal when it switches out."
+    },
+    {
+        "name": "no guard",
+        "description": "no guard ensures that all attacks used by, and targeted at, the ability-bearer hit without fail. this includes moves used on a revomon in the hidden stages of the moves fly, dive, dig and shadow force."
+    },
+    {
+        "name": "oblivious",
+        "description": "oblivious makes the revomon immune to gender-based moves and abilities, specifically attract, captivate and cute charm."
+    },
+    {
+        "name": "overcoat",
+        "description": "this revomon is immune to powder moves and damage from sandstorm or hail."
+    },
+    {
+        "name": "overgrow",
+        "description": "overgrow increases the power of forest-type moves by 50% (1.5\u00d7) when the ability-bearer's hp falls below a third of it's maximum (known in-game as in a pinch)."
+    },
+    {
+        "name": "pickup",
+        "description": "when another revomon on the field uses a single-use held item, a revomon with pickup will obtain the used item (if they are not already holding anything) and it can be used again. revomon with pickup will also obtain an item thrown at them with fling (if they are not already holding anything)."
+    },
+    {
+        "name": "plus",
+        "description": "if an active ally has this ability or the minus ability, this revomon's sp. atk is 1.5x."
+    },
+    {
+        "name": "prankster",
+        "description": "prankster increases the priority of status moves by +1. this means that a slower revomon with prankster can use a status move before the opponent uses a regular move. or if the ability-bearer is faster, it could use a status move before the opponent uses a +1 priority move like aqua jet."
+    },
+    {
+        "name": "pressure",
+        "description": "pressure makes any attack targeted at the ability-bearer - regardless of whether it hits - use 2 pp instead of 1."
+    },
+    {
+        "name": "quick feet",
+        "description": "if this revomon is statused, it's speed is 1.5x; ignores speed drop from paralysis."
+    },
+    {
+        "name": "rain dish",
+        "description": "a revomon with rain dish will recover 1\u204416 of it's maximum hp during rain, after each turn."
+    },
+    {
+        "name": "reckless",
+        "description": "this revomon's attacks with recoil or crash damage have 1.2x power; not struggle."
+    },
+    {
+        "name": "refrigerate",
+        "description": "this revomon's neutral-type moves become ice type and have 1.2x power."
+    },
+    {
+        "name": "regenerator",
+        "description": "this revomon restores 1/3 of it's maximum hp, rounded down, when it switches out."
+    },
+    {
+        "name": "rivalry",
+        "description": "this revomon's attacks do 1.25x on same gender targets; 0.75x on opposite gender."
+    },
+    {
+        "name": "run away",
+        "description": "run away allows the bearer to flee a battle with a wild revomon without fail, even if the opposing revomon has used a move like mean look or bind, or has an ability such as arena trap. revomon with run away cannot switch out for another revomon, only flee. it does not allow the revomon to flee from trainer battles."
+    },
+    {
+        "name": "sand force",
+        "description": "sand force raises the power of earth, stone and metal type moves by 30% during a sandstorm. it also grants immunity to the sandstorm damage, if not already immune."
+    },
+    {
+        "name": "sand rush",
+        "description": "sand rush doubles the ability-bearer's speed during a sandstorm."
+    },
+    {
+        "name": "sand stream",
+        "description": "sand stream creates a sandstorm when the ability-bearer enters battle. the effect lasts 5 turns, unless it is cleared via air lock or cloud nine or replaced by another weather condition. if multiple revomon with weather-generating abilities (sand stream, drizzle, drought or snow warning) enter the field on the same turn, each weather condition will activate consecutively, fastest revomon first. in other words, the resultant weather condition will be that of the slowest revomon."
+    },
+    {
+        "name": "sand veil",
+        "description": "sand veil raises the ability-bearer's evasion by 20% in a sandstorm. it also gives immunity to sandstorm damage (if they are not already protected by being earth/stone/metal type)."
+    },
+    {
+        "name": "scrappy",
+        "description": "this revomon can hit phantom types with neutral- and battle-type moves."
+    },
+    {
+        "name": "serene grace",
+        "description": "serene grace doubles the chance of moves' secondary effects occurring - specifically stat changes, status ailments, or flinching."
+    },
+    {
+        "name": "shadow tag",
+        "description": "prevents the foe from escaping."
+    },
+    {
+        "name": "shed skin",
+        "description": "the revomon may heal it's own status problems."
+    },
+    {
+        "name": "sheer force",
+        "description": "sheer force increases the power of moves that have beneficial secondary effects by 30%, but removes those additional effects. beneficial effects are defined as those that are positive for the user, such as: causing a status condition on the opponent (e.g. thunderbolt), reducing the opponent's stats (e.g. crunch), increasing the user's stats (e.g. ancientpower), etc. non-beneficial effects, that sheer force will not activate for, include: recoil damage (e.g. double-edge), lowering the user's stats (e.g. superpower). note that if a move has an advantageous and disadvantageous side-effect, sheer force still boosts the move but only the advantageous effect is removed. for example, flare blitz may cause a burn but also has recoil damage. a revomon with sheer force using the move would gain the power increase and still receive recoil damage, but it would never cause a burn"
+    },
+    {
+        "name": "shield dust",
+        "description": "this revomon is not affected by the secondary effect of another revomon's attack."
+    },
+    {
+        "name": "sniper",
+        "description": "if this revomon strikes with a critical hit, the damage is multiplied by 1.5."
+    },
+    {
+        "name": "snow warning",
+        "description": "snow warning creates a hailstorm when the ability-bearer enters battle. the effect lasts 5 turns, unless it is cleared via air lock or cloud nine or replaced by another weather condition. if multiple revomon with weather-generating abilities (snow warning, drizzle, drought or sand stream) enter the field on the same turn, each weather condition will activate consecutively, fastest revomon first. in other words, the resultant weather condition will be that of the slowest revomon."
+    },
+    {
+        "name": "solar power",
+        "description": "during harsh sunlight, solar power raises the ability-bearer's special attack by 50%, but it also loses 1\u20448 of it's maximum hp after each turn."
+    },
+    {
+        "name": "soundproof",
+        "description": "this revomon is immune to sound-based moves, including heal bell."
+    },
+    {
+        "name": "speed boost",
+        "description": "this revomon's speed is raised 1 stage at the end of each full turn on the field."
+    },
+    {
+        "name": "static",
+        "description": "if a revomon with static is hit by a move making contact, there is a 30% chance the foe will become paralyzed."
+    },
+    {
+        "name": "steadfast",
+        "description": "if this revomon flinches, it's speed is raised by 1 stage."
+    },
+    {
+        "name": "stone head",
+        "description": "protects the revomon from recoil damage."
+    },
+    {
+        "name": "storm drain",
+        "description": "storm drain forces all single-target water-type moves - used by any other revomon on the field - to target this revomon, and with 100% accuracy. the ability is most useful in double/triple battles. when hit by the move, it deals no damage to the ability-bearer but raises it's special attack by one stage. stats can be raised to a maximum of +6 stages each. storm drain will activate for an water-type hidden power, but not water-type judgment. storm drain will activate for an water-type hidden power, but not water-type judgment. the ability is overridden by other revomon becoming the center of attention from the moves follow me or rage powder."
+    },
+    {
+        "name": "sturdy",
+        "description": "sturdy allows the revomon to survive with 1 hp if attacked at full hp with an attack that would otherwise knock it out. it also prevents one-hit-ko moves (fissure, horn drill, guillotine or sheer cold). if sturdy activates before the final hit of a multi-hit move (such as fury swipes), the subsequent hit will still deal damage and therefore cause the revomon to faint. sturdy does not prevent self-inflicted ko moves such as selfdestruct, explosion and final gambit."
+    },
+    {
+        "name": "super luck",
+        "description": "super luck raises the ability-bearer's critical-hit ratio by one stage (for most moves this increases from a 1\u204416 chance to 1\u20448)."
+    },
+    {
+        "name": "swarm",
+        "description": "swarm increases the power of bug-type moves by 50% (1.5\u00d7) when the ability-bearer's hp falls below a third of it's maximum (known in-game as in a pinch)."
+    },
+    {
+        "name": "swift swim",
+        "description": "swift swim doubles the ability-bearer's speed during rain."
+    },
+    {
+        "name": "synchronize",
+        "description": "if the opponent causes a burn, paralysis, or toxicing of a revomon with synchronize, the opponent receives the status condition too. self-inflicted status conditions (for example through the use of an item) are not passed on. outside of battle, if a revomon with synchronize is the leading party revomon, there is a 50% chance of each wild revomon encountered having the same nature."
+    },
+    {
+        "name": "tangled feet",
+        "description": "raises evasion if the revomon is confused."
+    },
+    {
+        "name": "technician",
+        "description": "technician increases the power of moves - that are usually base power 60 or below - by 50%. moves with variable base power are boosted only when it is 60 or below. for example, if magnitude hits at level 6 it will be boosted from 50 to 75, but level 7 will stay at 70 base power."
+    },
+    {
+        "name": "telepathy",
+        "description": "revomon with the telepathy ability will not take damage from teammates in double and triple battles. this affects moves such as surf and earthquake, which neutrally hit all revomon on the field apart from the user."
+    },
+    {
+        "name": "torrent",
+        "description": "torrent increases the power of water-type moves by 50% (1.5\u00d7) when the ability-bearer's hp falls below a third of it's maximum (known in-game as in a pinch)."
+    },
+    {
+        "name": "tough claws",
+        "description": "this revomon's contact moves have their power multiplied by 1.3. most physical-category moves are contact moves."
+    },
+    {
+        "name": "toxic point",
+        "description": "30% chance a revomon making contact with this revomon will be toxiced."
+    },
+    {
+        "name": "unburden",
+        "description": "raises speed if a held item is used."
+    },
+    {
+        "name": "unnerve",
+        "description": "makes the foe nervous and unable to eat berries."
+    },
+    {
+        "name": "vital spirit",
+        "description": "vital spirit prevents the ability-bearer from falling asleep. this means that it also prevents the use of the move rest."
+    },
+    {
+        "name": "water absorb",
+        "description": "a revomon with water absorb heals 1\u20444 of it's maximum hp when hit by a water-type attack."
+    },
+    {
+        "name": "weak armor",
+        "description": "when a revomon with weak armor is hit by a physical move, it's defense drops one stage, but it's speed increases by one stage."
+    }
+]

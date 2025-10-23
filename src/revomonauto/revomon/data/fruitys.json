@@ -1,0 +1,267 @@
+[
+    {
+        "name": "barka",
+        "description": "consumed when struck by a super-effective toxic-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "cassius",
+        "description": "consumed at 1/2 max hp to recover 1/4 max hp.",
+        "type": "held"
+    },
+    {
+        "name": "chamo",
+        "description": "consumed when struck by a super-effective spirit-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "choda",
+        "description": "consumed when struck by a super-effective sky-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "cozi",
+        "description": "consumed at 1/4 max hp when using a move to go first.",
+        "type": "held"
+    },
+    {
+        "name": "dabip",
+        "description": "consumed when struck by a super-effective electric-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "defo",
+        "description": "consumed at 1/2 max hp to restore 1/8 max hp. confuses revomon that dislike bitter flavor.",
+        "type": "held"
+    },
+    {
+        "name": "derlu",
+        "description": "drops special attack effort values by 10 and raises happiness.",
+        "type": "ev"
+    },
+    {
+        "name": "ebla",
+        "description": "consumed at 1/2 max hp to restore 1/8 max hp. confuses revomon that dislike sweet flavor.",
+        "type": "held"
+    },
+    {
+        "name": "ertha",
+        "description": "when the holder is hit by a special move, increases it's special defense by one stage.",
+        "type": "held"
+    },
+    {
+        "name": "frin",
+        "description": "consumed when struck by a super-effective draconic-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "frizy",
+        "description": "consumed to deal 1/8 attacker's max hp when holder is struck by a special attack.",
+        "type": "held"
+    },
+    {
+        "name": "glandu",
+        "description": "consumed at 1/4 max hp to boost defense.",
+        "type": "held"
+    },
+    {
+        "name": "globop",
+        "description": "consumed when struck by a super-effective attack to restore 1/4 max hp.",
+        "type": "held"
+    },
+    {
+        "name": "golmon",
+        "description": "consumed when struck by a super-effective time-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "golu",
+        "description": "consumed when frozen to cure frozen.",
+        "type": "held"
+    },
+    {
+        "name": "gunko",
+        "description": "consumed when struck by a super-effective fire-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "gupon",
+        "description": "consumed when struck by a super-effective ice-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "inchu",
+        "description": "consumed at 1/2 max hp to restore 1/8 max hp. confuses revomon that dislike spicy flavor.",
+        "type": "held"
+    },
+    {
+        "name": "iota",
+        "description": "consumed at 1/4 max hp to boost attack.",
+        "type": "held"
+    },
+    {
+        "name": "issou",
+        "description": "drops speed effort values by 10 and raises happiness.",
+        "type": "ev"
+    },
+    {
+        "name": "jadwa",
+        "description": "consumed when confused to cure confusion.",
+        "type": "held"
+    },
+    {
+        "name": "juiti",
+        "description": "consumed when paralyzed to cure paralysis.",
+        "type": "held"
+    },
+    {
+        "name": "kanda",
+        "description": "consumed when a move runs out of pp to restore it's pp by 10.",
+        "type": "held"
+    },
+    {
+        "name": "kankoo",
+        "description": "drops attack effort values by 10 and raises happiness.",
+        "type": "ev"
+    },
+    {
+        "name": "karoto",
+        "description": "drops hp effort values by 10 and raises happiness.",
+        "type": "ev"
+    },
+    {
+        "name": "lee",
+        "description": "when the holder is hit by a physical move, increases it's defense by one stage.",
+        "type": "held"
+    },
+    {
+        "name": "liech",
+        "description": "consumed at 1/4 max hp to boost special attack.",
+        "type": "held"
+    },
+    {
+        "name": "miopi",
+        "description": "consumed at 1/4 max hp to boost a random stat by two stages.",
+        "type": "held"
+    },
+    {
+        "name": "mitsi",
+        "description": "consumed at 1/4 max hp to boost accuracy of next move by 20%.",
+        "type": "held"
+    },
+    {
+        "name": "nonomi",
+        "description": "consumed when struck by a super-effective stone-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "osef",
+        "description": "consumed when asleep to cure sleep.",
+        "type": "held"
+    },
+    {
+        "name": "paia",
+        "description": "consumed at 1/2 max hp to restore 1/8 max hp. confuses revomon that dislike sour flavor.",
+        "type": "held"
+    },
+    {
+        "name": "papille",
+        "description": "drops defense effort values by 10 and raises happiness.",
+        "type": "ev"
+    },
+    {
+        "name": "papou",
+        "description": "consumed at 1/4 max hp to boost critical hit ratio by two stages.",
+        "type": "held"
+    },
+    {
+        "name": "peachu",
+        "description": "consumed when toxiced to cure toxic.",
+        "type": "held"
+    },
+    {
+        "name": "pritcha",
+        "description": "consumed when struck by a super-effective metal-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "psiro",
+        "description": "consumed when struck by a super-effective battle-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "ruka",
+        "description": "consumed when struck by a super-effective earth-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "tavaa",
+        "description": "consumed when struck by a super-effective bug-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "terter",
+        "description": "consumed when struck by a super-effective forest-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "tibli",
+        "description": "consumed at 1/2 max hp to restore 1/8 max hp. confuses revomon that dislike dry flavor.",
+        "type": "held"
+    },
+    {
+        "name": "tipli",
+        "description": "consumed when struck by a super-effective phantom-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "toktok",
+        "description": "consumed at 1/4 max hp to boost special defense.",
+        "type": "held"
+    },
+    {
+        "name": "trars",
+        "description": "consumed when struck by a super-effective twilight-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "trigo",
+        "description": "consumed at 1/4 max hp to boost speed.",
+        "type": "held"
+    },
+    {
+        "name": "truduku",
+        "description": "consumed when struck by a super-effective water-type attack to halve the damage.",
+        "type": "held"
+    },
+    {
+        "name": "vilvi",
+        "description": "consumed to cure any status condition or confusion.",
+        "type": "held"
+    },
+    {
+        "name": "vrio",
+        "description": "consumed at 1/2 max hp to recover 10 hp.",
+        "type": "held"
+    },
+    {
+        "name": "wilso",
+        "description": "drops special defense effort values by 10 and raises happiness.",
+        "type": "ev"
+    },
+    {
+        "name": "wiltu",
+        "description": "consumed when burned to cure a burn.",
+        "type": "held"
+    },
+    {
+        "name": "yannoi",
+        "description": "consumed to deal 1/8 attacker's max hp when holder is struck by a physical attack.",
+        "type": "held"
+    },
+    {
+        "name": "yululu",
+        "description": "consumed when struck by a neutral-type attack to halve the damage.",
+        "type": "held"
+    }
+]

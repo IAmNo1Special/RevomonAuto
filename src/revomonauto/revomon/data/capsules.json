@@ -1,0 +1,507 @@
+[
+    {
+        "cap_num": 1,
+        "move_id": 526,
+        "move_name": "work up"
+    },
+    {
+        "cap_num": 2,
+        "move_id": 337,
+        "move_name": "dragon claw"
+    },
+    {
+        "cap_num": 3,
+        "move_id": 473,
+        "move_name": "psyshock"
+    },
+    {
+        "cap_num": 4,
+        "move_id": 347,
+        "move_name": "calm mind"
+    },
+    {
+        "cap_num": 5,
+        "move_id": 46,
+        "move_name": "roar"
+    },
+    {
+        "cap_num": 6,
+        "move_id": 92,
+        "move_name": "toxic"
+    },
+    {
+        "cap_num": 7,
+        "move_id": 258,
+        "move_name": "hail"
+    },
+    {
+        "cap_num": 8,
+        "move_id": 339,
+        "move_name": "bulk up"
+    },
+    {
+        "cap_num": 9,
+        "move_id": 474,
+        "move_name": "venoshock"
+    },
+    {
+        "cap_num": 10,
+        "move_id": 237,
+        "move_name": "hidden power"
+    },
+    {
+        "cap_num": 11,
+        "move_id": 241,
+        "move_name": "sunny day"
+    },
+    {
+        "cap_num": 12,
+        "move_id": 269,
+        "move_name": "taunt"
+    },
+    {
+        "cap_num": 13,
+        "move_id": 58,
+        "move_name": "ice beam"
+    },
+    {
+        "cap_num": 14,
+        "move_id": 59,
+        "move_name": "blizzard"
+    },
+    {
+        "cap_num": 15,
+        "move_id": 63,
+        "move_name": "hyper beam"
+    },
+    {
+        "cap_num": 16,
+        "move_id": 113,
+        "move_name": "light screen"
+    },
+    {
+        "cap_num": 17,
+        "move_id": 182,
+        "move_name": "protect"
+    },
+    {
+        "cap_num": 18,
+        "move_id": 240,
+        "move_name": "rain dance"
+    },
+    {
+        "cap_num": 19,
+        "move_id": 355,
+        "move_name": "roost"
+    },
+    {
+        "cap_num": 20,
+        "move_id": 219,
+        "move_name": "safeguard"
+    },
+    {
+        "cap_num": 21,
+        "move_id": 218,
+        "move_name": "frustration"
+    },
+    {
+        "cap_num": 22,
+        "move_id": 76,
+        "move_name": "solar beam"
+    },
+    {
+        "cap_num": 23,
+        "move_id": 479,
+        "move_name": "smack down"
+    },
+    {
+        "cap_num": 24,
+        "move_id": 85,
+        "move_name": "thunderbolt"
+    },
+    {
+        "cap_num": 25,
+        "move_id": 87,
+        "move_name": "thunder"
+    },
+    {
+        "cap_num": 26,
+        "move_id": 89,
+        "move_name": "earthquake"
+    },
+    {
+        "cap_num": 27,
+        "move_id": 216,
+        "move_name": "return"
+    },
+    {
+        "cap_num": 28,
+        "move_id": 141,
+        "move_name": "leech life"
+    },
+    {
+        "cap_num": 29,
+        "move_id": 94,
+        "move_name": "psychic"
+    },
+    {
+        "cap_num": 30,
+        "move_id": 247,
+        "move_name": "shadow ball"
+    },
+    {
+        "cap_num": 31,
+        "move_id": 280,
+        "move_name": "brick break"
+    },
+    {
+        "cap_num": 32,
+        "move_id": 104,
+        "move_name": "double team"
+    },
+    {
+        "cap_num": 33,
+        "move_id": 115,
+        "move_name": "reflect"
+    },
+    {
+        "cap_num": 34,
+        "move_id": 482,
+        "move_name": "sludge wave"
+    },
+    {
+        "cap_num": 35,
+        "move_id": 53,
+        "move_name": "flamethrower"
+    },
+    {
+        "cap_num": 36,
+        "move_id": 188,
+        "move_name": "sludge bomb"
+    },
+    {
+        "cap_num": 37,
+        "move_id": 201,
+        "move_name": "sandstorm"
+    },
+    {
+        "cap_num": 38,
+        "move_id": 126,
+        "move_name": "fire blast"
+    },
+    {
+        "cap_num": 39,
+        "move_id": 317,
+        "move_name": "rock tomb"
+    },
+    {
+        "cap_num": 40,
+        "move_id": 332,
+        "move_name": "aerial ace"
+    },
+    {
+        "cap_num": 41,
+        "move_id": 259,
+        "move_name": "torment"
+    },
+    {
+        "cap_num": 42,
+        "move_id": 263,
+        "move_name": "facade"
+    },
+    {
+        "cap_num": 43,
+        "move_id": 488,
+        "move_name": "flame charge"
+    },
+    {
+        "cap_num": 44,
+        "move_id": 156,
+        "move_name": "rest"
+    },
+    {
+        "cap_num": 45,
+        "move_id": 213,
+        "move_name": "attract"
+    },
+    {
+        "cap_num": 46,
+        "move_id": 168,
+        "move_name": "thief"
+    },
+    {
+        "cap_num": 47,
+        "move_id": 490,
+        "move_name": "low sweep"
+    },
+    {
+        "cap_num": 48,
+        "move_id": 496,
+        "move_name": "round"
+    },
+    {
+        "cap_num": 49,
+        "move_id": 497,
+        "move_name": "echoed voice"
+    },
+    {
+        "cap_num": 50,
+        "move_id": 315,
+        "move_name": "overheat"
+    },
+    {
+        "cap_num": 51,
+        "move_id": 211,
+        "move_name": "steel wing"
+    },
+    {
+        "cap_num": 52,
+        "move_id": 411,
+        "move_name": "focus blast"
+    },
+    {
+        "cap_num": 53,
+        "move_id": 412,
+        "move_name": "energy ball"
+    },
+    {
+        "cap_num": 54,
+        "move_id": 206,
+        "move_name": "false swipe"
+    },
+    {
+        "cap_num": 55,
+        "move_id": 503,
+        "move_name": "scald"
+    },
+    {
+        "cap_num": 56,
+        "move_id": 374,
+        "move_name": "fling"
+    },
+    {
+        "cap_num": 57,
+        "move_id": 451,
+        "move_name": "charge beam"
+    },
+    {
+        "cap_num": 58,
+        "move_id": 507,
+        "move_name": "sky drop"
+    },
+    {
+        "cap_num": 59,
+        "move_id": 693,
+        "move_name": "brutal swing"
+    },
+    {
+        "cap_num": 60,
+        "move_id": 511,
+        "move_name": "quash"
+    },
+    {
+        "cap_num": 61,
+        "move_id": 261,
+        "move_name": "will o wisp"
+    },
+    {
+        "cap_num": 62,
+        "move_id": 512,
+        "move_name": "acrobatics"
+    },
+    {
+        "cap_num": 63,
+        "move_id": 373,
+        "move_name": "embargo"
+    },
+    {
+        "cap_num": 64,
+        "move_id": 153,
+        "move_name": "explosion"
+    },
+    {
+        "cap_num": 65,
+        "move_id": 421,
+        "move_name": "shadow claw"
+    },
+    {
+        "cap_num": 66,
+        "move_id": 371,
+        "move_name": "payback"
+    },
+    {
+        "cap_num": 67,
+        "move_id": 684,
+        "move_name": "smart strike"
+    },
+    {
+        "cap_num": 68,
+        "move_id": 416,
+        "move_name": "giga impact"
+    },
+    {
+        "cap_num": 69,
+        "move_id": 397,
+        "move_name": "rock polish"
+    },
+    {
+        "cap_num": 71,
+        "move_id": 444,
+        "move_name": "stone edge"
+    },
+    {
+        "cap_num": 72,
+        "move_id": 521,
+        "move_name": "volt switch"
+    },
+    {
+        "cap_num": 73,
+        "move_id": 86,
+        "move_name": "thunder wave"
+    },
+    {
+        "cap_num": 74,
+        "move_id": 360,
+        "move_name": "gyro ball"
+    },
+    {
+        "cap_num": 75,
+        "move_id": 14,
+        "move_name": "swords dance"
+    },
+    {
+        "cap_num": 76,
+        "move_id": 19,
+        "move_name": "fly"
+    },
+    {
+        "cap_num": 77,
+        "move_id": 244,
+        "move_name": "psych up"
+    },
+    {
+        "cap_num": 78,
+        "move_id": 523,
+        "move_name": "bulldoze"
+    },
+    {
+        "cap_num": 79,
+        "move_id": 524,
+        "move_name": "frost breath"
+    },
+    {
+        "cap_num": 80,
+        "move_id": 157,
+        "move_name": "rock slide"
+    },
+    {
+        "cap_num": 81,
+        "move_id": 404,
+        "move_name": "x scissor"
+    },
+    {
+        "cap_num": 82,
+        "move_id": 525,
+        "move_name": "dragon tail"
+    },
+    {
+        "cap_num": 83,
+        "move_id": 611,
+        "move_name": "infestation"
+    },
+    {
+        "cap_num": 84,
+        "move_id": 398,
+        "move_name": "poison jab"
+    },
+    {
+        "cap_num": 85,
+        "move_id": 138,
+        "move_name": "dream eater"
+    },
+    {
+        "cap_num": 86,
+        "move_id": 447,
+        "move_name": "grass knot"
+    },
+    {
+        "cap_num": 87,
+        "move_id": 207,
+        "move_name": "swagger"
+    },
+    {
+        "cap_num": 88,
+        "move_id": 214,
+        "move_name": "sleep talk"
+    },
+    {
+        "cap_num": 89,
+        "move_id": 369,
+        "move_name": "u turn"
+    },
+    {
+        "cap_num": 90,
+        "move_id": 164,
+        "move_name": "substitute"
+    },
+    {
+        "cap_num": 91,
+        "move_id": 430,
+        "move_name": "flash cannon"
+    },
+    {
+        "cap_num": 92,
+        "move_id": 433,
+        "move_name": "trick room"
+    },
+    {
+        "cap_num": 93,
+        "move_id": 528,
+        "move_name": "wild charge"
+    },
+    {
+        "cap_num": 94,
+        "move_id": 57,
+        "move_name": "surf"
+    },
+    {
+        "cap_num": 95,
+        "move_id": 555,
+        "move_name": "snarl"
+    },
+    {
+        "cap_num": 96,
+        "move_id": 267,
+        "move_name": "nature power"
+    },
+    {
+        "cap_num": 97,
+        "move_id": 399,
+        "move_name": "dark pulse"
+    },
+    {
+        "cap_num": 98,
+        "move_id": 127,
+        "move_name": "waterfall"
+    },
+    {
+        "cap_num": 99,
+        "move_id": 605,
+        "move_name": "dazzling gleam"
+    },
+    {
+        "cap_num": 100,
+        "move_id": 590,
+        "move_name": "confide"
+    },
+    {
+        "cap_num": 104,
+        "move_id": 70,
+        "move_name": "strength"
+    },
+    {
+        "cap_num": 106,
+        "move_id": 249,
+        "move_name": "rock smash"
+    }
+]
