@@ -1,4 +1,5 @@
 import io
+import random
 import time
 from logging import getLogger
 from pathlib import Path
@@ -164,7 +165,7 @@ class RevoAppController(BluepyllController, RevomonApp):
             print(f"An error occurred: {e}")
             return -1.0
 
-    def extract_initial_battle_info(self):
+    def extract_battle_info(self):
         try:
             screenshot_bytes = self.capture_screenshot()
             if not screenshot_bytes:
@@ -208,63 +209,78 @@ class RevoAppController(BluepyllController, RevomonApp):
             )
 
             # Read text from the extracted regions
-            player1_mon_name = self.img_txt_checker.read_text(
-                ui.player1_mon_name_text.path
-            )
-            player1_mon_lvl = self.img_txt_checker.read_text(
-                ui.player1_mon_lvl_text.path, allowlist="lvl1234567890 "
-            )
-            for result in player1_mon_lvl:
-                if "lvl " in result:
-                    level = result.strip("lvl ")
-                    if level.isdigit():
-                        if int(level) > 100:
-                            player1_mon_lvl = ["lvl 100"]
-                if result[3] != " ":
-                    level = result.strip("lvl")
-                    if level.isdigit():
-                        player1_mon_lvl = [f"lvl {level}"]
-            percentage1 = self.extract_health_percentage(ui.player1_mon_hp_text.path)
+            mon_name = self.img_txt_checker.read_text(ui.player1_mon_name_text.path)[0]
+            if mon_name:
+                self.mon_on_field["name"] = mon_name
 
-            player2_mon_name = self.img_txt_checker.read_text(
+            mon_lvl = self.img_txt_checker.read_text(
+                ui.player1_mon_lvl_text.path, allowlist="lvl1234567890 "
+            )[0]
+            if mon_lvl and "lvl" in mon_lvl:
+                level = mon_lvl.strip("lvl").strip()
+                if level.isdigit():
+                    if int(level) > 100:
+                        self.mon_on_field["level"] = 100
+                    else:
+                        self.mon_on_field["level"] = int(level)
+
+            mon_hp = self.extract_health_percentage(ui.player1_mon_hp_text.path)
+            if mon_hp:
+                self.mon_on_field["current_hp_percentage"] = float(f"{mon_hp:.2f}")
+
+            opps_mon_name = self.img_txt_checker.read_text(
                 ui.player2_mon_name_text.path
-            )
-            player2_mon_lvl = self.img_txt_checker.read_text(
+            )[0]
+            if opps_mon_name:
+                self.opps_mon_on_field["name"] = opps_mon_name
+
+            opps_mon_lvl = self.img_txt_checker.read_text(
                 ui.player2_mon_lvl_text.path, allowlist="lvl1234567890 "
-            )
-            for result in player2_mon_lvl:
-                if "lvl " in result:
-                    level = result.strip("lvl ")
-                    if level.isdigit():
-                        if int(level) > 100:
-                            player2_mon_lvl = ["lvl 100"]
-                if result[3] != " ":
-                    level = result.strip("lvl")
-                    if level.isdigit():
-                        player2_mon_lvl = [f"lvl {level}"]
-            percentage2 = self.extract_health_percentage(ui.player2_mon_hp_text.path)
+            )[0]
+            if opps_mon_lvl and "lvl" in opps_mon_lvl:
+                level = opps_mon_lvl.strip("lvl").strip()
+                if level.isdigit():
+                    if int(level) > 100:
+                        self.opps_mon_on_field["level"] = 100
+                    else:
+                        self.opps_mon_on_field["level"] = int(level)
+
+            opps_mon_hp = self.extract_health_percentage(ui.player2_mon_hp_text.path)
+            if opps_mon_hp:
+                self.opps_mon_on_field["current_hp_percentage"] = float(
+                    f"{opps_mon_hp:.2f}"
+                )
 
             logger.info("Initial battle info extracted successfully")
             logger.info(
-                f"ME: {player1_mon_name} {player1_mon_lvl} Health: {percentage1:.2f}%"
+                f"ME: NAME: {self.mon_on_field['name']} LEVEL: {self.mon_on_field['level']} CURRENT HP: {self.mon_on_field['current_hp_percentage']}%"
             )
             logger.info(
-                f"OPPONENT: {player2_mon_name} {player2_mon_lvl} Health: {percentage2:.2f}%"
+                f"OPPONENT: NAME: {self.opps_mon_on_field['name']} LEVEL: {self.opps_mon_on_field['level']} CURRENT HP: {self.opps_mon_on_field['current_hp_percentage']}%"
             )
         except Exception as e:
             logger.error(f"Error extracting initial battle info: {e}")
 
-    def extract_current_battle_moves_info(self):
+    def extract_battle_moves(self):
         def process_move_data(move_data: list[str]):
-            # Post-processing to fix common OCR mistakes
-            if len(move_data) >= 3:
-                for result in move_data[2:]:
-                    move_data[0] = f"{move_data[0]} {result}"
-                move_data = move_data[:2]
-
-            if move_data[1] in ["toho", "ioh1o", "oh1o"]:
-                move_data[1] = "10/10"
-            return move_data
+            try:
+                # Post-processing to fix common OCR mistakes
+                if len(move_data) >= 3:
+                    for result in move_data[2:]:
+                        move_data[0] = f"{move_data[0]} {result}"
+                    move_data = move_data[:2]
+                if "h" in move_data[1]:
+                    move_data[1] = move_data[1].replace("h", "/")
+                if "o" in move_data[1]:
+                    move_data[1] = move_data[1].replace("o", "0")
+                if "t" in move_data[1]:
+                    move_data[1] = move_data[1].replace("t", "1")
+                if "i" in move_data[1]:
+                    move_data[1] = move_data[1].replace("i", "1")
+                return move_data
+            except Exception as e:
+                logger.error(f"Error processing move data: {e}")
+                return move_data
 
         try:
             screenshot_bytes = self.capture_screenshot()
@@ -302,26 +318,129 @@ class RevoAppController(BluepyllController, RevomonApp):
             player1_mon_move1 = self.img_txt_checker.read_text(
                 ui.player1_mon_move1_text.path
             )
-            player1_mon_move1 = process_move_data(player1_mon_move1)
+            if player1_mon_move1:
+                self.mon_on_field["moves"][0]["name"] = process_move_data(
+                    player1_mon_move1
+                )[0]
+                move_pp = process_move_data(player1_mon_move1)[1]
+                self.mon_on_field["moves"][0]["pp"]["current"] = int(
+                    move_pp.split("/")[0]
+                )
+                self.mon_on_field["moves"][0]["pp"]["total"] = int(
+                    move_pp.split("/")[1]
+                )
+
             player1_mon_move2 = self.img_txt_checker.read_text(
                 ui.player1_mon_move2_text.path
             )
-            player1_mon_move2 = process_move_data(player1_mon_move2)
+            if player1_mon_move2:
+                self.mon_on_field["moves"][1]["name"] = process_move_data(
+                    player1_mon_move2
+                )[0]
+                move_pp = process_move_data(player1_mon_move2)[1]
+                self.mon_on_field["moves"][1]["pp"]["current"] = int(
+                    move_pp.split("/")[0]
+                )
+                self.mon_on_field["moves"][1]["pp"]["total"] = int(
+                    move_pp.split("/")[1]
+                )
+
             player1_mon_move3 = self.img_txt_checker.read_text(
                 ui.player1_mon_move3_text.path
             )
-            player1_mon_move3 = process_move_data(player1_mon_move3)
+            if player1_mon_move3:
+                self.mon_on_field["moves"][2]["name"] = process_move_data(
+                    player1_mon_move3
+                )[0]
+                move_pp = process_move_data(player1_mon_move3)[1]
+                self.mon_on_field["moves"][2]["pp"]["current"] = int(
+                    move_pp.split("/")[0]
+                )
+                self.mon_on_field["moves"][2]["pp"]["total"] = int(
+                    move_pp.split("/")[1]
+                )
+
             player1_mon_move4 = self.img_txt_checker.read_text(
                 ui.player1_mon_move4_text.path
             )
-            player1_mon_move4 = process_move_data(player1_mon_move4)
+            if player1_mon_move4:
+                self.mon_on_field["moves"][3]["name"] = process_move_data(
+                    player1_mon_move4
+                )[0]
+                move_pp = process_move_data(player1_mon_move4)[1]
+                self.mon_on_field["moves"][3]["pp"]["current"] = int(
+                    move_pp.split("/")[0]
+                )
+                self.mon_on_field["moves"][3]["pp"]["total"] = int(
+                    move_pp.split("/")[1]
+                )
 
             logger.info("Current battle moves info extracted successfully")
             logger.info(
-                f"MOVES: {player1_mon_move1} {player1_mon_move2} {player1_mon_move3} {player1_mon_move4}"
+                f"MOVES: {self.mon_on_field['moves'][0]} {self.mon_on_field['moves'][1]} {self.mon_on_field['moves'][2]} {self.mon_on_field['moves'][3]}"
             )
         except Exception as e:
             logger.error(f"Error extracting current battle moves info: {e}")
+
+    def choose_move(self, move_name: str = None, choose_random: bool = False):
+        try:
+            # Filter moves to only include those with non-None names and PP > 0
+            valid_moves = [
+                move
+                for move in self.mon_on_field["moves"]
+                if move["name"] is not None and move.get("pp")["current"] > 0
+            ]
+            valid_move_names = [move["name"] for move in valid_moves]
+
+            if choose_random:
+                move_name = random.choice(valid_move_names)
+
+            # If not choosing randomly, validate that the move exists and has PP > 0
+            if not choose_random and move_name is not None:
+                # Check if move exists in full moves list
+                full_move_names = [move["name"] for move in self.mon_on_field["moves"]]
+                if move_name not in full_move_names:
+                    raise Exception(
+                        f"Move '{move_name}' not found in available moves: {full_move_names}"
+                    )
+
+                # Check if move has PP > 0
+                move_with_name = next(
+                    move
+                    for move in self.mon_on_field["moves"]
+                    if move["name"] == move_name
+                )
+                if move_with_name.get("pp")["current"] <= 0:
+                    raise Exception(
+                        f"Move '{move_name}' has no PP remaining: {move_with_name}"
+                    )
+
+                # Check if move is in valid moves list
+                if move_name not in valid_move_names:
+                    raise Exception(
+                        f"Move '{move_name}' cannot be selected (likely has 0 PP or invalid name)"
+                    )
+
+            # Find the move in the filtered valid moves
+            selected_move = next(
+                move for move in valid_moves if move["name"] == move_name
+            )
+
+            # Use the original index from the full moves list for UI clicking
+            original_index = self.mon_on_field["moves"].index(selected_move)
+            match original_index:
+                case 0:
+                    self.click_ui([ui.player1_mon_move1_text])
+                case 1:
+                    self.click_ui([ui.player1_mon_move2_text])
+                case 2:
+                    self.click_ui([ui.player1_mon_move3_text])
+                case 3:
+                    self.click_ui([ui.player1_mon_move4_text])
+                case _:
+                    raise Exception(f"Move {move_name} not found")
+        except Exception as e:
+            logger.error(f"Error choosing move: {e}")
 
     @action
     def open_revomon_app(self) -> Action:
@@ -1435,7 +1554,6 @@ class RevoAppController(BluepyllController, RevomonApp):
                         ignore_state_change_validation=ignore_state_change_validation,
                     )
                     self.curr_scene = "in_battle"
-                    self.extract_initial_battle_info()
                     return True
                 case _:
                     return False
@@ -1474,7 +1592,6 @@ class RevoAppController(BluepyllController, RevomonApp):
                         ignore_state_change_validation=ignore_state_change_validation,
                     )
                     self.curr_scene = "attacks_menu"
-                    self.extract_current_battle_moves_info()
                     return True
                 case _:
                     return False

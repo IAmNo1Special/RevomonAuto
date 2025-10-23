@@ -171,3 +171,22 @@ class RevomonApp(BluePyllApp):
 
         self.mon_details_img = None
         self.mon_detail_imgs = None
+
+        self.team = None # [{name: xxxx, level: xx, type: xxxx, ability: xxxx, nature: xxxx, current_hp: xx, max_hp: xx, moves: [xxxx, xxxx, xxxx, xxxx],}, ...]
+        self.mon_on_field = {
+            "name": None,
+            "level": None,
+            "current_hp_percentage": None,
+            "moves": [{"name": None, "type": None, "pp": {"current": None, "total": None}}, {"name": None, "type": None, "pp": {"current": None, "total": None}}, {"name": None, "type": None, "pp": {"current": None, "total": None}}, {"name": None, "type": None, "pp": {"current": None, "total": None}}]
+        }
+        self.last_move_used = None # {used_by: xxxx, move_name: xxxx, move_type: xxxx, starting_pp: xx, ending_pp: xx, total_pp: xx}
+
+        self.opps_team = None # [{name: xxxx, level: xx, type: xxxx, ability: xxxx, nature: xxxx, current_hp: xx, max_hp: xx, moves: [xxxx, xxxx, xxxx, xxxx],}, ...]
+        self.opps_mon_on_field = {
+            "name": None,
+            "level": None,
+            "current_hp_percentage": None,
+            "moves": [{"name": None, "type": None, "pp": {"current": None, "total": None}}, {"name": None, "type": None, "pp": {"current": None, "total": None}}, {"name": None, "type": None, "pp": {"current": None, "total": None}}, {"name": None, "type": None, "pp": {"current": None, "total": None}}]
+        }
+        self.opps_last_move_used = None # {used_by: xxxx, move_name: xxxx, move_type: xxxx, starting_pp: xx, ending_pp: xx, total_pp: xx}
+
