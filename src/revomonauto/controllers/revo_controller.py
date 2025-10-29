@@ -407,12 +407,13 @@ class RevoAppController(BluepyllController, RevomonApp):
                 ],
                 image=screenshot_bytes,
             )
+            # Read text from the extracted regions
+            battle_log = self.img_txt_checker.read_text(ui.chat_log_image.path)
+            if battle_log:
+                logger.info(f"Battle log: {battle_log}")
         except Exception as e:
             logger.error(f"Error extracting battle log region: {e}")
-        # Read text from the extracted regions
-        battle_log = self.img_txt_checker.read_text(ui.chat_log_image.path)
-        if battle_log:
-            logger.info(f"Battle log: {battle_log}")
+        
 
     @action
     def open_revomon_app(self) -> Action:
