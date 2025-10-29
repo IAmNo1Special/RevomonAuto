@@ -287,7 +287,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                 return move_data
             except Exception as e:
                 logger.error(f"Error processing move data: {e}")
-                return move_data
+                return None
 
         try:
             screenshot_bytes = self.capture_screenshot()
