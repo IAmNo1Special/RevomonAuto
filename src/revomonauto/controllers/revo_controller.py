@@ -267,15 +267,15 @@ class RevoAppController(BluepyllController, RevomonApp):
             try:
                 # Post-processing to fix common OCR mistakes
                 logger.info(f"Processing raw move data: {move_data}")
+                if len(move_data) < 2:
+                    logger.warning(f"Incomplete move data, cannot process PP: {move_data}")
+                    return move_data
                 if move_data[0] == "8":
                     move_data.pop(0)
                 if len(move_data) >= 3:
                     for result in move_data[2:]:
                         move_data[0] = f"{move_data[0]} {result}"
                     move_data = move_data[:2]
-                if len(move_data) < 2:
-                    logger.warning(f"Incomplete move data, cannot process PP: {move_data}")
-                    return move_data
                 if "h" in move_data[1]:
                     move_data[1] = move_data[1].replace("h", "/")
                 if "o" in move_data[1]:
