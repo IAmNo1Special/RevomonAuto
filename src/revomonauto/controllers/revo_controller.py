@@ -916,7 +916,11 @@ class RevoAppController(BluepyllController, RevomonApp):
             choose_random (bool, optional): Whether to choose a random move. Defaults to False.
 
         Returns:
-            Action (dict): The action object representing the action performed.
+            Action: The action object representing the action performed.
+
+        Raises:
+            ValueError: If not logged in or in an invalid battle state
+            RuntimeError: If no valid moves are available or if there's an error selecting a move
         """
         match self.login_sm.current_state:
             case LoginState.LOGGED_IN:
@@ -924,8 +928,10 @@ class RevoAppController(BluepyllController, RevomonApp):
                     case BattleState.NOT_IN_BATTLE:
                         if self.is_in_battle_scene():
                             self.click_coords(ui.attacks_button_pixel.center)
+                        return self.actions.click(ui.attacks_button_pixel.center)
                     case BattleState.IN_BATTLE:
                         self.click_coords(ui.attacks_button_pixel.center)
+                        return self.actions.click(ui.attacks_button_pixel.center)
                     case BattleState.ATTACKS_MENU_OPEN:
                         try:
                             # Get all valid moves (non-None names with PP > 0)
@@ -938,35 +944,40 @@ class RevoAppController(BluepyllController, RevomonApp):
 
                             # Early exit if no valid moves
                             if not valid_moves:
-                                raise Exception("No valid moves found (all moves have 0 PP or None names)")
+                                raise RuntimeError("No valid moves found (all moves have 0 PP or None names)")
 
                             valid_move_names = [move["name"] for move in valid_moves]
 
-                            # Handle random move selection
+                            # Handle random move selection with safety check
                             if choose_random:
+                                if not valid_move_names:
+                                    raise RuntimeError("No valid moves available for random selection")
                                 move_name = random.choice(valid_move_names)
                             elif move_name is not None:
                                 # For specific move, verify it's valid
-                                full_move_names = [move.get("name") for move in self.mon_on_field["moves"] 
-                                                 if move.get("name") is not None]
+                                full_move_names = [
+                                    move.get("name") for move in self.mon_on_field["moves"] 
+                                    if move.get("name") is not None
+                                ]
                                 
                                 if move_name not in full_move_names:
-                                    raise Exception(
+                                    raise ValueError(
                                         f"Move '{move_name}' not found in available moves: {full_move_names}"
                                     )
                                 
                                 if move_name not in valid_move_names:
                                     # If move exists but not in valid_moves, it must have 0 PP
-                                    raise Exception(
-                                        f"Move '{move_name}' has no PP remaining"
-                                    )
+                                    raise RuntimeError(f"Move '{move_name}' has no PP remaining")
 
                             # Find the original index from the full moves list for UI clicking
-                            original_index = next(
-                                i for i, move in enumerate(self.mon_on_field["moves"])
-                                if move.get("name") == move_name
-                            )
-                            
+                            try:
+                                original_index = next(
+                                    i for i, move in enumerate(self.mon_on_field["moves"])
+                                    if move.get("name") == move_name
+                                )
+                            except StopIteration:
+                                raise RuntimeError(f"Failed to find move in moves list: {move_name}")
+
                             move_buttons = [
                                 ui.player1_mon_move1_text,
                                 ui.player1_mon_move2_text,
@@ -975,14 +986,13 @@ class RevoAppController(BluepyllController, RevomonApp):
                             ]
                             
                             if 0 <= original_index < len(move_buttons):
-                                self.click_ui([move_buttons[original_index]])
+                                return self.actions.click_ui([move_buttons[original_index]])
                             else:
-                                raise Exception(f"Move {move_name} not found with index {original_index}")
+                                raise RuntimeError(f"Move index {original_index} out of range for move: {move_name}")
                                 
-                        except StopIteration:
-                            logger.error(f"Failed to find move: {move_name}")
                         except Exception as e:
-                            logger.error(f"Error in choose_move: {e}")
+                            logger.error(f"Error in choose_move: {str(e)}")
+                            raise  # Re-raise the exception after logging
                     case _:
                         raise ValueError("Invalid battle state for choose_move")
             case _:
