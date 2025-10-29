@@ -989,8 +989,10 @@ class RevoAppController(BluepyllController, RevomonApp):
                                 self.click_ui([move_buttons[original_index]])
                             else:
                                 raise Exception(f"Move {move_name} not found with index {original_index}")
+                        except Exception as e:
+                            logger.error(f"Error choosing move: {e}")
             case _:
-                raise ValueError("Not logged in!")
+                raise ValueError("Invalid state for choose_move")
 
     @action
     def close_attacks_menu(self) -> Action:
