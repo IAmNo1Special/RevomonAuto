@@ -210,15 +210,15 @@ class RevoAppController(BluepyllController, RevomonApp):
             )
 
             # Read text from the extracted regions
-            mon_name = self.img_txt_checker.read_text(ui.player1_mon_name_text.path)[0]
-            if mon_name:
-                self.mon_on_field["name"] = mon_name
+            mon_name = self.img_txt_checker.read_text(ui.player1_mon_name_text.path)  
+            if mon_name and mon_name[0]:  
+                self.mon_on_field["name"] = mon_name[0] 
 
             mon_lvl = self.img_txt_checker.read_text(
                 ui.player1_mon_lvl_text.path, allowlist="lvl1234567890 "
-            )[0]
-            if mon_lvl and "lvl" in mon_lvl:
-                level = mon_lvl.strip("lvl").strip()
+            )
+            if mon_lvl and mon_lvl[0] and "lvl" in mon_lvl[0]:
+                level = mon_lvl[0].strip("lvl").strip()
                 if level.isdigit():
                     if int(level) > 100:
                         self.mon_on_field["level"] = 100
@@ -231,15 +231,15 @@ class RevoAppController(BluepyllController, RevomonApp):
 
             opps_mon_name = self.img_txt_checker.read_text(
                 ui.player2_mon_name_text.path
-            )[0]
-            if opps_mon_name:
-                self.opps_mon_on_field["name"] = opps_mon_name
+            )
+            if opps_mon_name and opps_mon_name[0]:
+                self.opps_mon_on_field["name"] = opps_mon_name[0]
 
             opps_mon_lvl = self.img_txt_checker.read_text(
                 ui.player2_mon_lvl_text.path, allowlist="lvl1234567890 "
-            )[0]
-            if opps_mon_lvl and "lvl" in opps_mon_lvl:
-                level = opps_mon_lvl.strip("lvl").strip()
+            )
+            if opps_mon_lvl and opps_mon_lvl[0] and "lvl" in opps_mon_lvl[0]:
+                level = opps_mon_lvl[0].strip("lvl").strip()
                 if level.isdigit():
                     if int(level) > 100:
                         self.opps_mon_on_field["level"] = 100
