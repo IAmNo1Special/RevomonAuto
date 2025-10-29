@@ -32,18 +32,17 @@ if __name__ == "__main__":
         logger.info("Logging in...")
         controller.log_in()
 
-        while input("Press Enter once your in a battle...") == "":
-            while controller.is_in_battle_scene():
-                logger.info("Extracting battle info...")
-                controller.extract_battle_info()
+        while True:
+            if controller.is_in_battle_scene():
+                
                 logger.info("Opening attacks menu...")
                 controller.open_attacks_menu()
-                if controller.is_attacks_menu_scene():
-                    controller.extract_battle_moves()
-                    logger.info("choosing random attack...")
-                    controller.choose_move(choose_random=True)
-                    time.sleep(3.0)
+                
+                logger.info("choosing random attack...")
+                controller.choose_move(choose_random=True)
 
+
+                
         logger.info("Quitting game...")
         controller.quit_game()
 

@@ -166,6 +166,7 @@ class RevoAppController(BluepyllController, RevomonApp):
             return -1.0
 
     def extract_battle_info(self):
+        logger.info("Extracting battle info...")
         try:
             screenshot_bytes = self.capture_screenshot()
             if not screenshot_bytes:
@@ -185,9 +186,9 @@ class RevoAppController(BluepyllController, RevomonApp):
                         ui.player1_mon_lvl_text.label,
                     ),
                     (
-                        ui.player1_mon_hp_text.position,
-                        ui.player1_mon_hp_text.size,
-                        ui.player1_mon_hp_text.label,
+                        ui.player1_mon_hp_img.position,
+                        ui.player1_mon_hp_img.size,
+                        ui.player1_mon_hp_img.label,
                     ),
                     (
                         ui.player2_mon_name_text.position,
@@ -200,9 +201,9 @@ class RevoAppController(BluepyllController, RevomonApp):
                         ui.player2_mon_lvl_text.label,
                     ),
                     (
-                        ui.player2_mon_hp_text.position,
-                        ui.player2_mon_hp_text.size,
-                        ui.player2_mon_hp_text.label,
+                        ui.player2_mon_hp_img.position,
+                        ui.player2_mon_hp_img.size,
+                        ui.player2_mon_hp_img.label,
                     ),
                 ],
                 image=screenshot_bytes,
@@ -224,7 +225,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                     else:
                         self.mon_on_field["level"] = int(level)
 
-            mon_hp = self.extract_health_percentage(ui.player1_mon_hp_text.path)
+            mon_hp = self.extract_health_percentage(ui.player1_mon_hp_img.path)
             if mon_hp:
                 self.mon_on_field["current_hp_percentage"] = float(f"{mon_hp:.2f}")
 
@@ -245,7 +246,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                     else:
                         self.opps_mon_on_field["level"] = int(level)
 
-            opps_mon_hp = self.extract_health_percentage(ui.player2_mon_hp_text.path)
+            opps_mon_hp = self.extract_health_percentage(ui.player2_mon_hp_img.path)
             if opps_mon_hp:
                 self.opps_mon_on_field["current_hp_percentage"] = float(
                     f"{opps_mon_hp:.2f}"
@@ -265,6 +266,9 @@ class RevoAppController(BluepyllController, RevomonApp):
         def process_move_data(move_data: list[str]):
             try:
                 # Post-processing to fix common OCR mistakes
+                logger.info(f"Processing raw move data: {move_data}")
+                if move_data[0] == "8":
+                    move_data.pop(0)
                 if len(move_data) >= 3:
                     for result in move_data[2:]:
                         move_data[0] = f"{move_data[0]} {result}"
@@ -277,6 +281,9 @@ class RevoAppController(BluepyllController, RevomonApp):
                     move_data[1] = move_data[1].replace("t", "1")
                 if "i" in move_data[1]:
                     move_data[1] = move_data[1].replace("i", "1")
+                if "s" in move_data[1]:
+                    move_data[1] = move_data[1].replace("s", "5")
+                logger.info(f"Processed move data: {move_data}")
                 return move_data
             except Exception as e:
                 logger.error(f"Error processing move data: {e}")
@@ -318,46 +325,41 @@ class RevoAppController(BluepyllController, RevomonApp):
             player1_mon_move1 = self.img_txt_checker.read_text(
                 ui.player1_mon_move1_text.path
             )
+            processed_move_data = process_move_data(player1_mon_move1)
+
             if player1_mon_move1:
-                self.mon_on_field["moves"][0]["name"] = process_move_data(
-                    player1_mon_move1
-                )[0]
-                move_pp = process_move_data(player1_mon_move1)[1]
+                self.mon_on_field["moves"][0]["name"] = processed_move_data[0]
                 self.mon_on_field["moves"][0]["pp"]["current"] = int(
-                    move_pp.split("/")[0]
+                    processed_move_data[1].split("/")[0]
                 )
                 self.mon_on_field["moves"][0]["pp"]["total"] = int(
-                    move_pp.split("/")[1]
+                    processed_move_data[1].split("/")[1]
                 )
 
             player1_mon_move2 = self.img_txt_checker.read_text(
                 ui.player1_mon_move2_text.path
             )
+            processed_move_data = process_move_data(player1_mon_move2)
             if player1_mon_move2:
-                self.mon_on_field["moves"][1]["name"] = process_move_data(
-                    player1_mon_move2
-                )[0]
-                move_pp = process_move_data(player1_mon_move2)[1]
+                self.mon_on_field["moves"][1]["name"] = processed_move_data[0]
                 self.mon_on_field["moves"][1]["pp"]["current"] = int(
-                    move_pp.split("/")[0]
+                    processed_move_data[1].split("/")[0]
                 )
                 self.mon_on_field["moves"][1]["pp"]["total"] = int(
-                    move_pp.split("/")[1]
+                    processed_move_data[1].split("/")[1]
                 )
 
             player1_mon_move3 = self.img_txt_checker.read_text(
                 ui.player1_mon_move3_text.path
             )
+            processed_move_data = process_move_data(player1_mon_move3)
             if player1_mon_move3:
-                self.mon_on_field["moves"][2]["name"] = process_move_data(
-                    player1_mon_move3
-                )[0]
-                move_pp = process_move_data(player1_mon_move3)[1]
+                self.mon_on_field["moves"][2]["name"] = processed_move_data[0]
                 self.mon_on_field["moves"][2]["pp"]["current"] = int(
-                    move_pp.split("/")[0]
+                    processed_move_data[1].split("/")[0]
                 )
                 self.mon_on_field["moves"][2]["pp"]["total"] = int(
-                    move_pp.split("/")[1]
+                    processed_move_data[1].split("/")[1]
                 )
 
             player1_mon_move4 = self.img_txt_checker.read_text(
@@ -367,12 +369,11 @@ class RevoAppController(BluepyllController, RevomonApp):
                 self.mon_on_field["moves"][3]["name"] = process_move_data(
                     player1_mon_move4
                 )[0]
-                move_pp = process_move_data(player1_mon_move4)[1]
                 self.mon_on_field["moves"][3]["pp"]["current"] = int(
-                    move_pp.split("/")[0]
+                    process_move_data(player1_mon_move4)[1].split("/")[0]
                 )
                 self.mon_on_field["moves"][3]["pp"]["total"] = int(
-                    move_pp.split("/")[1]
+                    process_move_data(player1_mon_move4)[1].split("/")[1]
                 )
 
             logger.info("Current battle moves info extracted successfully")
@@ -382,65 +383,34 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             logger.error(f"Error extracting current battle moves info: {e}")
 
-    def choose_move(self, move_name: str = None, choose_random: bool = False):
+    def extract_battle_log(self):
         try:
-            # Filter moves to only include those with non-None names and PP > 0
-            valid_moves = [
-                move
-                for move in self.mon_on_field["moves"]
-                if move["name"] is not None and move.get("pp")["current"] > 0
-            ]
-            valid_move_names = [move["name"] for move in valid_moves]
+            screenshot_bytes = self.capture_screenshot()
+            if not screenshot_bytes:
+                raise Exception("Failed to take screenshot")
 
-            if choose_random:
-                move_name = random.choice(valid_move_names)
+            if self.is_main_menu_scene():
+                logger.info("Closing main menu...")
+                self.close_main_menu()
+                logger.info("Battle over...")
 
-            # If not choosing randomly, validate that the move exists and has PP > 0
-            if not choose_random and move_name is not None:
-                # Check if move exists in full moves list
-                full_move_names = [move["name"] for move in self.mon_on_field["moves"]]
-                if move_name not in full_move_names:
-                    raise Exception(
-                        f"Move '{move_name}' not found in available moves: {full_move_names}"
-                    )
-
-                # Check if move has PP > 0
-                move_with_name = next(
-                    move
-                    for move in self.mon_on_field["moves"]
-                    if move["name"] == move_name
-                )
-                if move_with_name.get("pp")["current"] <= 0:
-                    raise Exception(
-                        f"Move '{move_name}' has no PP remaining: {move_with_name}"
-                    )
-
-                # Check if move is in valid moves list
-                if move_name not in valid_move_names:
-                    raise Exception(
-                        f"Move '{move_name}' cannot be selected (likely has 0 PP or invalid name)"
-                    )
-
-            # Find the move in the filtered valid moves
-            selected_move = next(
-                move for move in valid_moves if move["name"] == move_name
+            # Extract initial battle info
+            self.extract_regions(
+                position_x_sizes=[
+                    (
+                        ui.chat_log_image.position,
+                        ui.chat_log_image.size,
+                        ui.chat_log_image.label,
+                    ),
+                ],
+                image=screenshot_bytes,
             )
-
-            # Use the original index from the full moves list for UI clicking
-            original_index = self.mon_on_field["moves"].index(selected_move)
-            match original_index:
-                case 0:
-                    self.click_ui([ui.player1_mon_move1_text])
-                case 1:
-                    self.click_ui([ui.player1_mon_move2_text])
-                case 2:
-                    self.click_ui([ui.player1_mon_move3_text])
-                case 3:
-                    self.click_ui([ui.player1_mon_move4_text])
-                case _:
-                    raise Exception(f"Move {move_name} not found")
         except Exception as e:
-            logger.error(f"Error choosing move: {e}")
+            logger.error(f"Error extracting battle log region: {e}")
+        # Read text from the extracted regions
+        battle_log = self.img_txt_checker.read_text(ui.chat_log_image.path)
+        if battle_log:
+            logger.info(f"Battle log: {battle_log}")
 
     @action
     def open_revomon_app(self) -> Action:
@@ -475,22 +445,6 @@ class RevoAppController(BluepyllController, RevomonApp):
         Returns:
             Action (dict): The action object representing the action performed.
         """
-
-        # Wait for the app to be ready
-        logger.info("Waiting for app to be ready...")
-        max_attempts = 10
-        for attempt in range(max_attempts):
-            current_state = self.app_state.current_state
-            logger.info(
-                f"Current app state: {current_state} state type: {type(current_state)} (attempt {attempt + 1}/{max_attempts})"
-            )
-            if current_state == AppLifecycleState.READY:
-                logger.info("App is ready")
-                break
-            time.sleep(2.0)
-        else:
-            logger.warning("Timed out waiting for app to be ready")
-
         match self.app_state.current_state:
             case AppLifecycleState.READY:
                 match self.login_sm.current_state:
@@ -974,8 +928,101 @@ class RevoAppController(BluepyllController, RevomonApp):
                             self.click_coords(ui.attacks_button_pixel.center)
                     case BattleState.IN_BATTLE:
                         self.click_coords(ui.attacks_button_pixel.center)
+                        
             case _:
-                raise ValueError(f"Not logged in!")
+                raise ValueError("Not logged in!")
+
+    @action
+    def choose_move(
+        self, move_name: str | None = None, choose_random: bool = False
+    ) -> Action:
+        """
+        Chooses a move to use in battle.
+
+        Args:
+            move_name (str | None, optional): The name of the move to use. Defaults to None.
+            choose_random (bool, optional): Whether to choose a random move. Defaults to False.
+
+        Returns:
+            Action (dict): The action object representing the action performed.
+        """
+        match self.login_sm.current_state:
+            case LoginState.LOGGED_IN:
+                match self.battle_sm.current_state:
+                    case BattleState.NOT_IN_BATTLE:
+                        if self.is_in_battle_scene():
+                            self.click_coords(ui.attacks_button_pixel.center)
+                    case BattleState.IN_BATTLE:
+                            self.click_coords(ui.attacks_button_pixel.center)
+                    case BattleState.ATTACKS_MENU_OPEN:
+                        try:
+                            # Filter moves to only include those with non-None names and PP > 0
+                            valid_moves = [
+                                move
+                                for move in self.mon_on_field["moves"]
+                                if move["name"] is not None
+                                and move.get("pp")["current"] > 0
+                            ]
+                            valid_move_names = [move["name"] for move in valid_moves]
+
+                            if choose_random:
+                                move_name = random.choice(valid_move_names)
+
+                            # If not choosing randomly, validate that the move exists and has PP > 0
+                            if not choose_random and move_name is not None:
+                                # Check if move exists in full moves list
+                                full_move_names = [
+                                    move["name"] for move in self.mon_on_field["moves"]
+                                ]
+                                if move_name not in full_move_names:
+                                    raise Exception(
+                                        f"Move '{move_name}' not found in available moves: {full_move_names}"
+                                    )
+
+                                # Check if move has PP > 0
+                                move_with_name = next(
+                                    move
+                                    for move in self.mon_on_field["moves"]
+                                    if move["name"] == move_name
+                                )
+                                if move_with_name.get("pp")["current"] <= 0:
+                                    raise Exception(
+                                        f"Move '{move_name}' has no PP remaining: {move_with_name}"
+                                    )
+
+                                # Check if move is in valid moves list
+                                if move_name not in valid_move_names:
+                                    raise Exception(
+                                        f"Move '{move_name}' cannot be selected (likely has 0 PP or invalid name)"
+                                    )
+
+                            # Find the move in the filtered valid moves
+                            selected_move = next(
+                                move
+                                for move in valid_moves
+                                if move["name"] == move_name
+                            )
+
+                            # Use the original index from the full moves list for UI clicking
+                            original_index = self.mon_on_field["moves"].index(
+                                selected_move
+                            )
+                            match original_index:
+                                case 0:
+                                    self.click_ui([ui.player1_mon_move1_text])
+                                case 1:
+                                    self.click_ui([ui.player1_mon_move2_text])
+                                case 2:
+                                    self.click_ui([ui.player1_mon_move3_text])
+                                case 3:
+                                    self.click_ui([ui.player1_mon_move4_text])
+                                case _:
+                                    raise Exception(f"Move {move_name} not found")
+                            time.sleep(0.5)
+                        except Exception as e:
+                            logger.error(f"Error choosing move: {e}")
+            case _:
+                raise ValueError("Not logged in!")
 
     @action
     def close_attacks_menu(self) -> Action:
@@ -1053,6 +1100,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                             self.open_battle_bag()
                         else:
                             self.open_menu_bag()
+
             case _:
                 raise ValueError(f"Not logged in!")
 
@@ -1285,7 +1333,10 @@ class RevoAppController(BluepyllController, RevomonApp):
             else:
                 logger.info("New World State initialized.")
 
-    def is_start_game_scene(self, ignore_state_change_validation: bool = False) -> bool:
+    def is_start_game_scene(
+        self,
+        ignore_state_change_validation: bool = False,
+    ) -> bool:
         """
         Checks if the Revomon app is in the start game scene(app open and loaded).
         Passing this check means the app is open and loaded.
@@ -1317,7 +1368,10 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             raise Exception(f"error during ' is_start_game_scene': {e}")
 
-    def is_login_scene(self, ignore_state_change_validation: bool = False) -> bool:
+    def is_login_scene(
+        self,
+        ignore_state_change_validation: bool = False,
+    ) -> bool:
         """
         Checks if the Revomon app is in the login scene(app open, loaded and started).
         Passing this check means the app is open, loaded and started.
@@ -1349,7 +1403,10 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             raise Exception(f"error during 'is_login_scene': {e}")
 
-    def is_overworld_scene(self, ignore_state_change_validation: bool = False) -> bool:
+    def is_overworld_scene(
+        self,
+        ignore_state_change_validation: bool = False,
+    ) -> bool:
         """
         Checks if the Revomon app is in the overworld scene(no menu's are open and not in any battle).
         Passing this check means the app is open, loaded, started and the User is logged in.
@@ -1386,7 +1443,10 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             raise Exception(f"error during 'is_overworld_scene': {e}")
 
-    def is_tv_scene(self, ignore_state_change_validation: bool = False) -> bool:
+    def is_tv_scene(
+        self,
+        ignore_state_change_validation: bool = False,
+    ) -> bool:
         """
         Checks if the Revomon app is in the TV scene(TV is open).
         Passing this check means the app is open, loaded, started, the User is logged in and the TV is open.
@@ -1416,7 +1476,10 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             raise Exception(f"error during 'is_tv_scene': {e}")
 
-    def is_menu_bag_scene(self, ignore_state_change_validation: bool = False) -> bool:
+    def is_menu_bag_scene(
+        self,
+        ignore_state_change_validation: bool = False,
+    ) -> bool:
         """
         Checks if the Revomon app is in the menu bag scene(menu bag is open).
         Passing this check means the app is open, loaded, started, the User is logged in and the menu bag is open.
@@ -1449,7 +1512,10 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             raise Exception(f"error during 'is_menu_bag_scene': {e}")
 
-    def is_battle_bag_scene(self, ignore_state_change_validation: bool = False) -> bool:
+    def is_battle_bag_scene(
+        self,
+        ignore_state_change_validation: bool = False,
+    ) -> bool:
         # TODO: Currently is same check as menu bag scene as the bag ui appears to be the same. Update to check for battle bag ui specific elements.
         """
         Checks if the Revomon app is in the battle bag scene(battle bag is open).
@@ -1484,7 +1550,10 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             raise Exception(f"error during 'is_battle_bag_scene': {e}")
 
-    def is_main_menu_scene(self, ignore_state_change_validation: bool = False) -> bool:
+    def is_main_menu_scene(
+        self,
+        ignore_state_change_validation: bool = False,
+    ) -> bool:
         """
         Checks if the Revomon app is in the main menu scene(main menu is open).
         Passing this check means the app is open, loaded, started, the User is logged in and the main menu is open.
@@ -1530,18 +1599,19 @@ class RevoAppController(BluepyllController, RevomonApp):
         """
         try:
             # Checking for the green in the Revomon name plates that appear during battle (Player1, Player2)
+            screenshot = self.capture_screenshot()
             match (
                 self.check_pixel_color(
                     coords=ui.player1_mon_nameplate_pixel.position,
                     target_color=ui.player1_mon_nameplate_pixel.pixel_color,
-                    image=self.capture_screenshot(),
-                    tolerance=5,
+                    image=screenshot,
+                    tolerance=10,
                 ),
                 self.check_pixel_color(
                     coords=ui.player2_mon_nameplate_pixel.position,
                     target_color=ui.player2_mon_nameplate_pixel.pixel_color,
-                    image=self.capture_screenshot(),
-                    tolerance=5,
+                    image=screenshot,
+                    tolerance=10,
                 ),
             ):
                 case (True, True):
@@ -1554,6 +1624,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                         ignore_state_change_validation=ignore_state_change_validation,
                     )
                     self.curr_scene = "in_battle"
+                    self.extract_battle_info()
                     return True
                 case _:
                     return False
@@ -1576,10 +1647,11 @@ class RevoAppController(BluepyllController, RevomonApp):
             bool: True if the app is in the attacks menu scene, False otherwise.
         """
         try:
+            screenshot = self.capture_screenshot()
             match self.check_pixel_color(
                 coords=ui.exit_attacks_button_pixel.position,
                 target_color=ui.exit_attacks_button_pixel.pixel_color,
-                image=self.capture_screenshot(),
+                image=screenshot,
                 tolerance=5,
             ):
                 case True:
@@ -1592,6 +1664,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                         ignore_state_change_validation=ignore_state_change_validation,
                     )
                     self.curr_scene = "attacks_menu"
+                    self.extract_battle_moves()
                     return True
                 case _:
                     return False
@@ -1599,10 +1672,45 @@ class RevoAppController(BluepyllController, RevomonApp):
         except Exception as e:
             raise Exception(f"Error setting is_attacks_menu_scene(): {e}")
 
+    def is_waiting_for_opponent(
+        self, ignore_state_change_validation: bool = False
+    ) -> bool:
+        try:
+            screenshot_bytes = self.capture_screenshot()
+
+            # Extract waiting for opponent text
+            self.extract_regions(
+                position_x_sizes=[
+                    (
+                        ui.waiting_for_opponent_text.position,
+                        ui.waiting_for_opponent_text.size,
+                        ui.waiting_for_opponent_text.label,
+                    ),
+                ],
+                image=screenshot_bytes,
+            )
+
+            # Read text from the extracted regions
+            result = self.img_txt_checker.read_text(ui.waiting_for_opponent_text.path)
+            if len(result) > 0:
+                for text in result:
+                    if "for opponent" in str(text).lower():
+                        self.update_world_state(
+                            new_app_state=AppLifecycleState.READY,
+                            new_login_state=LoginState.LOGGED_IN,
+                            new_menu_state=MenuState.MAIN_MENU_CLOSED,
+                            new_battle_state=BattleState.WAITING_FOR_OPPONENT,
+                            new_tv_state=TVState.TV_CLOSED,
+                            ignore_state_change_validation=ignore_state_change_validation,
+                        )
+                        self.curr_scene = "waiting_for_opponent"
+                        return True
+            return False
+        except Exception as e:
+            raise Exception(f"Error setting is_waiting_for_opponent(): {e}")
+
     def wait_for_action(self, action: str):
         try:
-            time.sleep(2.0)
-
             while True:
                 logger.info(f"Waiting for {action} action to complete...")
                 match action:
@@ -1918,6 +2026,28 @@ class RevoAppController(BluepyllController, RevomonApp):
                                         return
                                     case False:
                                         continue
+                    case "choose_move":
+                        while self.is_waiting_for_opponent():
+                            continue
+                        match self.is_overworld_scene():
+                            case True:
+                                logger.info("Opening main menu...")
+                                self.open_main_menu()
+                                logger.info("Extracting battle log...")
+                                self.extract_battle_log()
+                                return
+                            case False:
+                                match self.is_in_battle_scene():
+                                    case True:
+                                        logger.info("Extracting battle log...")
+                                        self.extract_battle_log()
+                                        return
+                                    case False:
+                                        match self.is_login_scene():
+                                            case True:
+                                                return
+                                            case False:
+                                                continue
                     case "close_attacks_menu":
                         match self.is_in_battle_scene():
                             case True:
