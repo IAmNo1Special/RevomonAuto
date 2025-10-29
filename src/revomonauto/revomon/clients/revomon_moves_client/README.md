@@ -23,7 +23,7 @@ This client bridges the gap between available moves and Revomon capabilities, es
 Each move learning entry contains comprehensive compatibility information:
 
 ### Core Information
-- **`mon_dex_id`** - Revomon's Pokedex ID
+- **`mon_dex_id`** - Revomon's Revodex ID
 - **`mon_name`** - Revomon species name
 - **`move_id`** - Move database ID
 - **`move_name`** - Name of the learnable move
@@ -87,10 +87,10 @@ print(f"Monking learns at level 20: {[m['move_name'] for m in monking_level_20]}
 
 #### `get_moves_by_revomon_id(dex_id)`
 
-Get all moves learnable by a Revomon by Pokedex ID.
+Get all moves learnable by a Revomon by Revodex ID.
 
 **Parameters:**
-- `dex_id` (int): The Revomon's Pokedex ID
+- `dex_id` (int): The Revomon's Revodex ID
 
 **Returns:** List of moves the Revomon can learn
 
@@ -149,7 +149,7 @@ Get all moves learned at a specific level.
 Get moves a specific Revomon learns at a given level.
 
 **Parameters:**
-- `dex_id` (int): The Revomon's Pokedex ID
+- `dex_id` (int): The Revomon's Revodex ID
 - `level` (int): The level
 
 **Returns:** List of moves learned at that level

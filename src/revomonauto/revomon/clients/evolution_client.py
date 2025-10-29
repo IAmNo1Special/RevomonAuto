@@ -8,10 +8,12 @@ This client provides:
 - Evolution requirements tracking
 - Competitive evolution meta analysis
 """
-from typing import Dict, List, Optional, Any
-from .revomon_client import RevomonClient
-from .natures_client import NaturesClient
+
 from logging import getLogger
+from typing import Any, Dict, List, Optional
+
+from .natures_client import NaturesClient
+from .revomon_client import RevomonClient
 
 logger = getLogger(__name__)
 
@@ -46,7 +48,7 @@ class EvolutionClient:
         Get the complete evolution tree for a Revomon including all branches.
 
         Args:
-            start_dex_id: Starting Pokedex ID
+            start_dex_id: Starting Revodex ID
 
         Returns:
             Complete evolution tree with all branches
@@ -59,7 +61,7 @@ class EvolutionClient:
             "root": start_revomon.copy(),
             "branches": [],
             "all_members": [start_revomon.copy()],
-            "total_members": 1
+            "total_members": 1,
         }
 
         # Build evolution tree using breadth-first search
@@ -77,7 +79,7 @@ class EvolutionClient:
                 branch = {
                     "parent": current.copy(),
                     "children": children.copy(),
-                    "branch_stats": self._calculate_branch_stats(children)
+                    "branch_stats": self._calculate_branch_stats(children),
                 }
 
                 tree["branches"].append(branch)
@@ -101,7 +103,7 @@ class EvolutionClient:
         Find all Revomon that evolve from a given parent.
 
         Args:
-            parent_dex_id: Parent Pokedex ID
+            parent_dex_id: Parent Revodex ID
 
         Returns:
             List of child Revomon
@@ -126,7 +128,7 @@ class EvolutionClient:
         Find all Revomon that a given Revomon evolves from.
 
         Args:
-            child_dex_id: Child Pokedex ID
+            child_dex_id: Child Revodex ID
 
         Returns:
             List of parent Revomon
@@ -145,13 +147,15 @@ class EvolutionClient:
 
         return parents
 
-    def get_evolution_path(self, start_dex_id: int, end_dex_id: int) -> Optional[List[Dict[str, Any]]]:
+    def get_evolution_path(
+        self, start_dex_id: int, end_dex_id: int
+    ) -> Optional[List[Dict[str, Any]]]:
         """
         Find the evolution path between two Revomon.
 
         Args:
-            start_dex_id: Starting Pokedex ID
-            end_dex_id: Ending Pokedex ID
+            start_dex_id: Starting Revodex ID
+            end_dex_id: Ending Revodex ID
 
         Returns:
             List of Revomon in evolution path, or None if no path exists
@@ -184,7 +188,9 @@ class EvolutionClient:
 
         return None  # No path found
 
-    def analyze_evolution_efficiency(self, evolution_chain: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def analyze_evolution_efficiency(
+        self, evolution_chain: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """
         Analyze the efficiency of an evolution chain.
 
@@ -203,7 +209,7 @@ class EvolutionClient:
             "stat_efficiency": {},
             "level_requirements": [],
             "type_changes": [],
-            "ability_changes": []
+            "ability_changes": [],
         }
 
         # Calculate stat growth
@@ -221,29 +227,33 @@ class EvolutionClient:
                 "growth": growth,
                 "growth_percentage": growth_percentage,
                 "base_value": base_value,
-                "final_value": final_value
+                "final_value": final_value,
             }
 
         # Calculate total stat totals
         base_total = sum(base_stats.get(stat, 0) for stat in stat_names)
         final_total = sum(final_stats.get(stat, 0) for stat in stat_names)
         total_growth = final_total - base_total
-        total_growth_percentage = (total_growth / base_total * 100) if base_total > 0 else 0
+        total_growth_percentage = (
+            (total_growth / base_total * 100) if base_total > 0 else 0
+        )
 
         analysis["total_stat_growth"]["total"] = {
             "growth": total_growth,
             "growth_percentage": total_growth_percentage,
             "base_total": base_total,
-            "final_total": final_total
+            "final_total": final_total,
         }
 
         # Level requirements
         for revomon in evolution_chain:
             if revomon.get("evo_lvl"):
-                analysis["level_requirements"].append({
-                    "name": revomon.get("name"),
-                    "level_required": revomon.get("evo_lvl")
-                })
+                analysis["level_requirements"].append(
+                    {
+                        "name": revomon.get("name"),
+                        "level_required": revomon.get("evo_lvl"),
+                    }
+                )
 
         # Type changes
         for i in range(len(evolution_chain) - 1):
@@ -254,11 +264,13 @@ class EvolutionClient:
             next_types = {next_rev.get("type1"), next_rev.get("type2")}
 
             if current_types != next_types:
-                analysis["type_changes"].append({
-                    "from": current.get("name"),
-                    "to": next_rev.get("name"),
-                    "type_change": f"{current_types} -> {next_types}"
-                })
+                analysis["type_changes"].append(
+                    {
+                        "from": current.get("name"),
+                        "to": next_rev.get("name"),
+                        "type_change": f"{current_types} -> {next_types}",
+                    }
+                )
 
         # Ability changes
         for i in range(len(evolution_chain) - 1):
@@ -268,26 +280,31 @@ class EvolutionClient:
             current_abilities = {
                 "ability1": current.get("ability1"),
                 "ability2": current.get("ability2"),
-                "hidden": current.get("abilityh")
+                "hidden": current.get("abilityh"),
             }
             next_abilities = {
                 "ability1": next_rev.get("ability1"),
                 "ability2": next_rev.get("ability2"),
-                "hidden": next_rev.get("abilityh")
+                "hidden": next_rev.get("abilityh"),
             }
 
             if current_abilities != next_abilities:
-                analysis["ability_changes"].append({
-                    "from": current.get("name"),
-                    "to": next_rev.get("name"),
-                    "ability_change": f"{current_abilities} -> {next_abilities}"
-                })
+                analysis["ability_changes"].append(
+                    {
+                        "from": current.get("name"),
+                        "to": next_rev.get("name"),
+                        "ability_change": f"{current_abilities} -> {next_abilities}",
+                    }
+                )
 
         return analysis
 
-    def find_optimal_evolution_path(self, target_stats: Dict[str, float] = None,
-                                   target_types: List[str] = None,
-                                   max_evolutions: int = 3) -> List[Dict[str, Any]]:
+    def find_optimal_evolution_path(
+        self,
+        target_stats: Dict[str, float] = None,
+        target_types: List[str] = None,
+        max_evolutions: int = 3,
+    ) -> List[Dict[str, Any]]:
         """
         Find evolution paths that lead to desired characteristics.
 
@@ -308,25 +325,34 @@ class EvolutionClient:
         for start_revomon in self.revomon_client.get_all():
             if start_revomon.get("evo"):  # Only consider Revomon that can evolve
                 # Get complete evolution chain
-                chain = self.revomon_client.get_evolution_chain(start_revomon.get("dex_id"))
+                chain = self.revomon_client.get_evolution_chain(
+                    start_revomon.get("dex_id")
+                )
                 if len(chain) <= max_evolutions:
                     # Score this evolution chain
-                    score = self._score_evolution_chain(chain, target_stats, target_types)
+                    score = self._score_evolution_chain(
+                        chain, target_stats, target_types
+                    )
                     if score > 0:
-                        optimal_paths.append({
-                            "chain": chain,
-                            "score": score,
-                            "analysis": self.analyze_evolution_efficiency(chain)
-                        })
+                        optimal_paths.append(
+                            {
+                                "chain": chain,
+                                "score": score,
+                                "analysis": self.analyze_evolution_efficiency(chain),
+                            }
+                        )
 
         # Sort by score (descending)
         optimal_paths.sort(key=lambda x: x["score"], reverse=True)
 
         return optimal_paths
 
-    def _score_evolution_chain(self, chain: List[Dict[str, Any]],
-                              target_stats: Dict[str, float] = None,
-                              target_types: List[str] = None) -> float:
+    def _score_evolution_chain(
+        self,
+        chain: List[Dict[str, Any]],
+        target_stats: Dict[str, float] = None,
+        target_types: List[str] = None,
+    ) -> float:
         """
         Score an evolution chain based on target criteria.
 
@@ -377,7 +403,7 @@ class EvolutionClient:
         Get detailed evolution requirements for a Revomon.
 
         Args:
-            dex_id: Pokedex ID
+            dex_id: Revodex ID
 
         Returns:
             Evolution requirements and conditions
@@ -390,7 +416,7 @@ class EvolutionClient:
             "current_revomon": revomon.copy(),
             "can_evolve": False,
             "evolution_method": "unknown",
-            "requirements": []
+            "requirements": [],
         }
 
         evo_name = revomon.get("evo")
@@ -409,22 +435,28 @@ class EvolutionClient:
             evo_level = revomon.get("evo_lvl")
             if evo_level:
                 requirements["evolution_method"] = "level"
-                requirements["requirements"].append({
-                    "type": "level",
-                    "value": evo_level,
-                    "description": f"Reach level {evo_level}"
-                })
+                requirements["requirements"].append(
+                    {
+                        "type": "level",
+                        "value": evo_level,
+                        "description": f"Reach level {evo_level}",
+                    }
+                )
             else:
                 # Check for other evolution methods
                 requirements["evolution_method"] = "unknown"
-                requirements["requirements"].append({
-                    "type": "unknown",
-                    "description": "Evolution method unknown - may require items, time, or other conditions"
-                })
+                requirements["requirements"].append(
+                    {
+                        "type": "unknown",
+                        "description": "Evolution method unknown - may require items, time, or other conditions",
+                    }
+                )
 
         return requirements
 
-    def _calculate_branch_stats(self, revomon_list: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _calculate_branch_stats(
+        self, revomon_list: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """
         Calculate statistics for a branch of evolution.
 
@@ -439,11 +471,12 @@ class EvolutionClient:
 
         stats = {
             "count": len(revomon_list),
-            "avg_stat_total": sum(r.get("stat_total", 0) for r in revomon_list) / len(revomon_list),
+            "avg_stat_total": sum(r.get("stat_total", 0) for r in revomon_list)
+            / len(revomon_list),
             "min_stat_total": min(r.get("stat_total", 0) for r in revomon_list),
             "max_stat_total": max(r.get("stat_total", 0) for r in revomon_list),
             "types": set(),
-            "rarities": set()
+            "rarities": set(),
         }
 
         for revomon in revomon_list:
@@ -459,7 +492,9 @@ class EvolutionClient:
 
         return stats
 
-    def _calculate_tree_stats(self, all_members: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _calculate_tree_stats(
+        self, all_members: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """
         Calculate overall statistics for an evolution tree.
 
@@ -480,15 +515,20 @@ class EvolutionClient:
             "min_stat_total": min(stat_totals),
             "max_stat_total": max(stat_totals),
             "stat_total_range": max(stat_totals) - min(stat_totals),
-            "unique_types": len(set(
-                t for r in all_members
-                for t in [r.get("type1"), r.get("type2")]
-                if t
-            )),
-            "rarity_distribution": self._calculate_rarity_distribution(all_members)
+            "unique_types": len(
+                set(
+                    t
+                    for r in all_members
+                    for t in [r.get("type1"), r.get("type2")]
+                    if t
+                )
+            ),
+            "rarity_distribution": self._calculate_rarity_distribution(all_members),
         }
 
-    def _calculate_rarity_distribution(self, revomon_list: List[Dict[str, Any]]) -> Dict[str, int]:
+    def _calculate_rarity_distribution(
+        self, revomon_list: List[Dict[str, Any]]
+    ) -> Dict[str, int]:
         """
         Calculate rarity distribution in a list of Revomon.
 
@@ -533,14 +573,17 @@ class EvolutionClient:
 
                 # If gap is larger than 100 stat points, it might indicate missing evolution
                 if stat_gap > 100:
-                    gaps.append({
-                        "tree": tree_name,
-                        "from": current.get("name"),
-                        "to": next_rev.get("name"),
-                        "stat_gap": stat_gap,
-                        "gap_percentage": (stat_gap / current.get("stat_total", 1)) * 100,
-                        "potential_missing_evolution": stat_gap > 150
-                    })
+                    gaps.append(
+                        {
+                            "tree": tree_name,
+                            "from": current.get("name"),
+                            "to": next_rev.get("name"),
+                            "stat_gap": stat_gap,
+                            "gap_percentage": (stat_gap / current.get("stat_total", 1))
+                            * 100,
+                            "potential_missing_evolution": stat_gap > 150,
+                        }
+                    )
 
         return gaps
 
@@ -577,7 +620,7 @@ class EvolutionClient:
             "most_common_evolution_method": "level",
             "trees_by_length": {},
             "stat_progression_patterns": [],
-            "type_evolution_patterns": []
+            "type_evolution_patterns": [],
         }
 
         chain_lengths = []
@@ -601,17 +644,21 @@ class EvolutionClient:
                 for i in range(len(sorted_members) - 1):
                     current = sorted_members[i]
                     next_rev = sorted_members[i + 1]
-                    growth = next_rev.get("stat_total", 0) - current.get("stat_total", 0)
-                    progression.append({
-                        "from": current.get("name"),
-                        "to": next_rev.get("name"),
-                        "growth": growth,
-                        "growth_percentage": (growth / current.get("stat_total", 1)) * 100
-                    })
+                    growth = next_rev.get("stat_total", 0) - current.get(
+                        "stat_total", 0
+                    )
+                    progression.append(
+                        {
+                            "from": current.get("name"),
+                            "to": next_rev.get("name"),
+                            "growth": growth,
+                            "growth_percentage": (growth / current.get("stat_total", 1))
+                            * 100,
+                        }
+                    )
 
-                meta_analysis["stat_progression_patterns"].append({
-                    "tree": tree_name,
-                    "progression": progression
-                })
+                meta_analysis["stat_progression_patterns"].append(
+                    {"tree": tree_name, "progression": progression}
+                )
 
         return meta_analysis

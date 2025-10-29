@@ -15,7 +15,7 @@ class RevomonClient(BaseDataClient):
     Client for accessing Revomon species data.
 
     Each record contains comprehensive Revomon information including:
-    - dex_id: Pokedex number
+    - dex_id: Revodex number
     - name: Revomon name
     - stats: HP, Attack, Defense, Special Attack, Special Defense, Speed
     - abilities: ability1, ability2, hidden ability
@@ -33,10 +33,10 @@ class RevomonClient(BaseDataClient):
 
     def get_revomon_by_id(self, dex_id: int) -> Optional[Dict[str, Any]]:
         """
-        Get Revomon data by Pokedex ID.
+        Get Revomon data by Revodex ID.
 
         Args:
-            dex_id: The Pokedex ID
+            dex_id: The Revodex ID
 
         Returns:
             Revomon data, or None if not found
@@ -169,7 +169,7 @@ class RevomonClient(BaseDataClient):
         Get the complete evolution chain for a Revomon.
 
         Args:
-            dex_id: Starting Pokedex ID
+            dex_id: Starting Revodex ID
 
         Returns:
             List of Revomon in the evolution chain

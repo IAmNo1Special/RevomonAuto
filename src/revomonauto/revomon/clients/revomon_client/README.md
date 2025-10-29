@@ -9,7 +9,7 @@ The core database client for Revomon species data, providing comprehensive acces
 
 The RevomonClient is the **central database** of the Revomon universe, containing complete information about every Revomon species including:
 
-- **Complete Pokedex data** with stats, types, and abilities
+- **Complete Revodex data** with stats, types, and abilities
 - **Evolution chains** and progression paths
 - **Spawn locations** and encounter rates
 - **Type distribution** and statistical analysis
@@ -22,7 +22,7 @@ This client serves as the foundation for all other clients in the Revomon ecosys
 Each Revomon record contains comprehensive information:
 
 ### Core Information
-- **`dex_id`** - Unique Pokedex number (primary key)
+- **`dex_id`** - Unique Revodex number (primary key)
 - **`name`** - Revomon species name
 - **`rarity`** - Rarity tier (common, uncommon, rare, legendary, shiny)
 
@@ -70,7 +70,7 @@ gorcano = revomon_client.get_revomon_by_name("gorcano")
 print(f"Gorcano stats: {gorcano['stat_total']} total")
 print(f"Types: {gorcano['type1']}/{gorcano.get('type2', 'None')}")
 
-# Get by Pokedex ID
+# Get by Revodex ID
 starter = revomon_client.get_revomon_by_id(1)
 print(f"Starter Revomon: {starter['name']}")
 ```
@@ -110,10 +110,10 @@ print(f"Revomon with Overgrow: {[r['name'] for r in ability_users]}")
 
 #### `get_revomon_by_id(dex_id)`
 
-Get Revomon data by Pokedex ID.
+Get Revomon data by Revodex ID.
 
 **Parameters:**
-- `dex_id` (int): The Pokedex ID
+- `dex_id` (int): The Revodex ID
 
 **Returns:** Revomon data dictionary or None if not found
 
@@ -199,7 +199,7 @@ Get Revomon with the lowest stat totals (least powerful).
 Get the complete evolution chain for a Revomon.
 
 **Parameters:**
-- `dex_id` (int): Starting Pokedex ID
+- `dex_id` (int): Starting Revodex ID
 
 **Returns:** List of Revomon in the evolution chain (base → mid → final)
 
@@ -377,7 +377,7 @@ for tree in evolution_meta[:5]:
 
 ## 📈 Performance
 
-- **Fast lookups**: Indexed by Pokedex ID and name for instant access
+- **Fast lookups**: Indexed by Revodex ID and name for instant access
 - **Cached data**: Loaded once and cached for subsequent queries
 - **Memory efficient**: Data is copied to prevent mutation
 - **Batch operations**: Support for bulk queries and analysis

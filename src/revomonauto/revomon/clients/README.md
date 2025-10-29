@@ -9,7 +9,7 @@ A comprehensive, modular client system for accessing and analyzing Revomon game 
 
 The Revomon Client System provides a unified interface for accessing various Revomon game datasets including:
 
-- **Revomon species** - Complete Pokedex data with stats, types, and evolution chains
+- **Revomon species** - Complete Revodex data with stats, types, and evolution chains
 - **Moves** - Comprehensive move database with power, accuracy, and effects
 - **Abilities** - All Revomon abilities and their mechanics
 - **Items** - Equipment, consumables, and utility items

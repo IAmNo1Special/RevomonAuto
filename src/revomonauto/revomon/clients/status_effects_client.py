@@ -201,7 +201,6 @@ class StatusEffectsClient(BaseDataClient):
         """
         status_abilities = []
 
-        # Common status abilities in Pokemon-style games
         status_ability_names = [
             "poison point", "flame body", "static", "cute charm",
             "effect spore", "synchronize", "trace", "stench"

@@ -1,9 +1,11 @@
 """
 Client for accessing Revomon moves data (which moves each Revomon can learn)
 """
-from typing import Dict, List, Any
-from .base_client import BaseDataClient
+
 from logging import getLogger
+from typing import Any, Dict, List
+
+from .base_client import BaseDataClient
 
 logger = getLogger(__name__)
 
@@ -13,7 +15,7 @@ class RevomonMovesClient(BaseDataClient):
     Client for accessing Revomon moves data.
 
     Each record contains information about which moves a Revomon can learn:
-    - mon_dex_id: Revomon's Pokedex ID
+    - mon_dex_id: Revomon's Revodex ID
     - mon_name: Revomon name
     - move_id: Move ID
     - move_name: Move name
@@ -30,17 +32,18 @@ class RevomonMovesClient(BaseDataClient):
 
     def get_moves_by_revomon_id(self, dex_id: int) -> List[Dict[str, Any]]:
         """
-        Get all moves learnable by a Revomon by Pokedex ID.
+        Get all moves learnable by a Revomon by Revodex ID.
 
         Args:
-            dex_id: The Revomon's Pokedex ID
+            dex_id: The Revomon's Revodex ID
 
         Returns:
             List of moves the Revomon can learn
         """
         self.load_data()
-        return [record.copy() for record in self._data
-                if record.get("mon_dex_id") == dex_id]
+        return [
+            record.copy() for record in self._data if record.get("mon_dex_id") == dex_id
+        ]
 
     def get_moves_by_revomon_name(self, name: str) -> List[Dict[str, Any]]:
         """
@@ -53,8 +56,9 @@ class RevomonMovesClient(BaseDataClient):
             List of moves the Revomon can learn
         """
         self.load_data()
-        return [record.copy() for record in self._data
-                if record.get("mon_name") == name]
+        return [
+            record.copy() for record in self._data if record.get("mon_name") == name
+        ]
 
     def get_moves_by_learning_method(self, method: str) -> List[Dict[str, Any]]:
         """
@@ -97,25 +101,33 @@ class RevomonMovesClient(BaseDataClient):
             List of moves learned at the specified level
         """
         self.load_data()
-        return [record.copy() for record in self._data
-                if record.get("method") == "levelup" and record.get("level") == level]
+        return [
+            record.copy()
+            for record in self._data
+            if record.get("method") == "levelup" and record.get("level") == level
+        ]
 
-    def get_revomon_levelup_moves_by_level(self, dex_id: int, level: int) -> List[Dict[str, Any]]:
+    def get_revomon_levelup_moves_by_level(
+        self, dex_id: int, level: int
+    ) -> List[Dict[str, Any]]:
         """
         Get moves a Revomon learns at a specific level.
 
         Args:
-            dex_id: The Revomon's Pokedex ID
+            dex_id: The Revomon's Revodex ID
             level: The level
 
         Returns:
             List of moves learned at the specified level
         """
         self.load_data()
-        return [record.copy() for record in self._data
-                if record.get("mon_dex_id") == dex_id and
-                record.get("method") == "levelup" and
-                record.get("level") == level]
+        return [
+            record.copy()
+            for record in self._data
+            if record.get("mon_dex_id") == dex_id
+            and record.get("method") == "levelup"
+            and record.get("level") == level
+        ]
 
     def get_all_learnable_moves(self) -> List[str]:
         """
@@ -141,8 +153,11 @@ class RevomonMovesClient(BaseDataClient):
             List of learning methods for the move
         """
         self.load_data()
-        return [record.copy() for record in self._data
-                if record.get("move_name") == move_name]
+        return [
+            record.copy()
+            for record in self._data
+            if record.get("move_name") == move_name
+        ]
 
     def get_revomon_with_move(self, move_name: str) -> List[Dict[str, Any]]:
         """
@@ -155,8 +170,11 @@ class RevomonMovesClient(BaseDataClient):
             List of Revomon that can learn the move
         """
         self.load_data()
-        return [record.copy() for record in self._data
-                if record.get("move_name") == move_name]
+        return [
+            record.copy()
+            for record in self._data
+            if record.get("move_name") == move_name
+        ]
 
     def get_learning_method_distribution(self) -> Dict[str, int]:
         """

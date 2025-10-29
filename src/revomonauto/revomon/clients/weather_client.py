@@ -115,7 +115,6 @@ class WeatherClient(BaseDataClient):
         """
         weather_abilities = []
 
-        # Common weather abilities in Pokemon-style games
         weather_ability_names = [
             "drizzle", "drought", "sand stream", "snow warning",
             "chlorophyll", "solar power", "rain dish", "ice body",
@@ -138,7 +137,6 @@ class WeatherClient(BaseDataClient):
         """
         weather_moves = []
 
-        # Common weather moves in Pokemon-style games
         weather_move_names = [
             "sunny day", "rain dance", "sandstorm", "hail",
             "weather ball", "solar beam", "moonlight", "morning sun",

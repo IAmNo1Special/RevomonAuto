@@ -1,9 +1,11 @@
 """
 Client for accessing Revomon counterdex data (competitive information)
 """
-from typing import Dict, List, Optional, Any
-from .base_client import BaseDataClient
+
 from logging import getLogger
+from typing import Any, Dict, List, Optional
+
+from .base_client import BaseDataClient
 
 logger = getLogger(__name__)
 
@@ -13,7 +15,7 @@ class CounterdexClient(BaseDataClient):
     Client for accessing Revomon counterdex data.
 
     Each record contains competitive information including:
-    - dex_id: Pokedex ID
+    - dex_id: Revodex ID
     - name: Revomon name
     - description: Competitive description
     - tier: Competitive tier ranking
@@ -32,10 +34,10 @@ class CounterdexClient(BaseDataClient):
 
     def get_counterdex_entry(self, dex_id: int) -> Optional[Dict[str, Any]]:
         """
-        Get counterdex data by Pokedex ID.
+        Get counterdex data by Revodex ID.
 
         Args:
-            dex_id: The Pokedex ID
+            dex_id: The Revodex ID
 
         Returns:
             Counterdex data, or None if not found
@@ -80,10 +82,15 @@ class CounterdexClient(BaseDataClient):
         min_value = tier_hierarchy.get(min_tier.lower(), 0)
 
         self.load_data()
-        return [record.copy() for record in self._data
-                if tier_hierarchy.get(record.get("tier", "").lower(), 0) >= min_value]
+        return [
+            record.copy()
+            for record in self._data
+            if tier_hierarchy.get(record.get("tier", "").lower(), 0) >= min_value
+        ]
 
-    def get_revomon_with_specific_counters(self, counter_names: List[str]) -> List[Dict[str, Any]]:
+    def get_revomon_with_specific_counters(
+        self, counter_names: List[str]
+    ) -> List[Dict[str, Any]]:
         """
         Get Revomon that are countered by specific Revomon.
 
@@ -99,14 +106,16 @@ class CounterdexClient(BaseDataClient):
             counters = record.get("counters", "")
             if counters:
                 # Split counters by newline and check if any match
-                record_counters = [c.strip() for c in counters.split('\n') if c.strip()]
+                record_counters = [c.strip() for c in counters.split("\n") if c.strip()]
                 for counter_name in counter_names:
                     if counter_name.lower() in [c.lower() for c in record_counters]:
                         matches.append(record.copy())
                         break
         return matches
 
-    def get_revomon_by_weakness_count(self, min_weaknesses: int = 4) -> List[Dict[str, Any]]:
+    def get_revomon_by_weakness_count(
+        self, min_weaknesses: int = 4
+    ) -> List[Dict[str, Any]]:
         """
         Get Revomon with many type weaknesses.
 
@@ -122,7 +131,7 @@ class CounterdexClient(BaseDataClient):
             weakness_text = record.get("weakness", "")
             if weakness_text:
                 # Count weaknesses by splitting on newlines
-                weaknesses = [w.strip() for w in weakness_text.split('\n') if w.strip()]
+                weaknesses = [w.strip() for w in weakness_text.split("\n") if w.strip()]
                 if len(weaknesses) >= min_weaknesses:
                     matches.append(record.copy())
         return matches

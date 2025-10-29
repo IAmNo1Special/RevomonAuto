@@ -102,7 +102,7 @@ else:
 Get complete evolution tree starting from a Revomon.
 
 **Parameters:**
-- `start_dex_id` (int): Starting Pokedex ID
+- `start_dex_id` (int): Starting Revodex ID
 
 **Returns:** Complete evolution tree with branches, statistics, and all members
 
@@ -131,7 +131,7 @@ Analyze efficiency of an evolution chain.
 Get detailed evolution requirements for a Revomon.
 
 **Parameters:**
-- `dex_id` (int): Pokedex ID
+- `dex_id` (int): Revodex ID
 
 **Returns:** Evolution requirements and conditions
 
@@ -140,8 +140,8 @@ Get detailed evolution requirements for a Revomon.
 Find shortest evolution path between two Revomon.
 
 **Parameters:**
-- `start_dex_id` (int): Starting Pokedex ID
-- `end_dex_id` (int): Ending Pokedex ID
+- `start_dex_id` (int): Starting Revodex ID
+- `end_dex_id` (int): Ending Revodex ID
 
 **Returns:** List of Revomon in evolution path, or None if no path
 

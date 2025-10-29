@@ -23,7 +23,7 @@ This client contains the distilled competitive knowledge that separates casual p
 Each entry contains comprehensive competitive information:
 
 ### Competitive Analysis
-- **`dex_id`** - Pokedex ID (primary key)
+- **`dex_id`** - Revodex ID (primary key)
 - **`name`** - Revomon species name
 - **`description`** - Competitive role and strategy description
 - **`tier`** - Competitive tier ranking (S = highest, D = lowest)
@@ -47,7 +47,7 @@ from revomonauto.revomon.clients import CounterdexClient
 # Initialize client
 counterdex_client = CounterdexClient()
 
-# Get competitive data by Pokedex ID
+# Get competitive data by Revodex ID
 monking_data = counterdex_client.get_counterdex_entry(25)
 if monking_data:
     print(f"Monking tier: {monking_data['tier']}")
@@ -82,10 +82,10 @@ for revomon in top_tier[:5]:
 
 #### `get_counterdex_entry(dex_id)`
 
-Get competitive data by Pokedex ID.
+Get competitive data by Revodex ID.
 
 **Parameters:**
-- `dex_id` (int): The Pokedex ID
+- `dex_id` (int): The Revodex ID
 
 **Returns:** Counterdex data dictionary or None if not found
 
@@ -462,7 +462,7 @@ for pair in counter_network['mutual_counters'][:5]:
 
 ## 📈 Performance
 
-- **Fast queries**: Indexed Pokedex IDs and tier lookups
+- **Fast queries**: Indexed Revodex IDs and tier lookups
 - **Cached data**: Counterdex database loaded once and cached
 - **Efficient analysis**: Optimized counter relationship calculations
 - **Memory efficient**: Data copied to prevent mutation
