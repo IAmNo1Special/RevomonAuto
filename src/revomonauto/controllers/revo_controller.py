@@ -935,6 +935,11 @@ class RevoAppController(BluepyllController, RevomonApp):
                                 if move["name"] is not None
                                 and move.get("pp")["current"] > 0
                             ]
+
+                            # If no valid moves are found, raise an exception
+                            if len(valid_moves) == 0:
+                                raise Exception("No valid moves found")
+
                             valid_move_names = [move["name"] for move in valid_moves]
 
                             if choose_random:
