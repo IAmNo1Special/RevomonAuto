@@ -961,13 +961,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                                         f"Move '{move_name}' has no PP remaining"
                                     )
 
-                            # Find and execute the selected move
-                            selected_move = next(
-                                move for move in valid_moves
-                                if move["name"] == move_name
-                            )
-
-                            # Use the original index from the full moves list for UI clicking
+                            # Find the original index from the full moves list for UI clicking
                             original_index = next(
                                 i for i, move in enumerate(self.mon_on_field["moves"])
                                 if move.get("name") == move_name
