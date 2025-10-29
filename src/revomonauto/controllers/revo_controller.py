@@ -979,20 +979,16 @@ class RevoAppController(BluepyllController, RevomonApp):
                             original_index = self.mon_on_field["moves"].index(
                                 selected_move
                             )
-                            match original_index:
-                                case 0:
-                                    self.click_ui([ui.player1_mon_move1_text])
-                                case 1:
-                                    self.click_ui([ui.player1_mon_move2_text])
-                                case 2:
-                                    self.click_ui([ui.player1_mon_move3_text])
-                                case 3:
-                                    self.click_ui([ui.player1_mon_move4_text])
-                                case _:
-                                    raise Exception(f"Move {move_name} not found")
-                            time.sleep(0.5)
-                        except Exception as e:
-                            logger.error(f"Error choosing move: {e}")
+                            move_buttons = [
+                                ui.player1_mon_move1_text,
+                                ui.player1_mon_move2_text,
+                                ui.player1_mon_move3_text,
+                                ui.player1_mon_move4_text,
+                            ]
+                            if 0 <= original_index < len(move_buttons):
+                                self.click_ui([move_buttons[original_index]])
+                            else:
+                                raise Exception(f"Move {move_name} not found with index {original_index}")
             case _:
                 raise ValueError("Not logged in!")
 
