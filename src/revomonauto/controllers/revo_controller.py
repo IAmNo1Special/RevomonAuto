@@ -925,79 +925,74 @@ class RevoAppController(BluepyllController, RevomonApp):
                         if self.is_in_battle_scene():
                             self.click_coords(ui.attacks_button_pixel.center)
                     case BattleState.IN_BATTLE:
-                            self.click_coords(ui.attacks_button_pixel.center)
+                        self.click_coords(ui.attacks_button_pixel.center)
                     case BattleState.ATTACKS_MENU_OPEN:
                         try:
-                            # Filter moves to only include those with non-None names and PP > 0
+                            # Get all valid moves (non-None names with PP > 0)
                             valid_moves = [
                                 move
                                 for move in self.mon_on_field["moves"]
-                                if move["name"] is not None
-                                and move.get("pp")["current"] > 0
+                                if move.get("name") is not None
+                                and move.get("pp", {}).get("current", 0) > 0
                             ]
 
-                            # If no valid moves are found, raise an exception
-                            if len(valid_moves) == 0:
-                                raise Exception("No valid moves found")
+                            # Early exit if no valid moves
+                            if not valid_moves:
+                                raise Exception("No valid moves found (all moves have 0 PP or None names)")
 
                             valid_move_names = [move["name"] for move in valid_moves]
 
+                            # Handle random move selection
                             if choose_random:
                                 move_name = random.choice(valid_move_names)
-
-                            # If not choosing randomly, validate that the move exists and has PP > 0
-                            if not choose_random and move_name is not None:
-                                # Check if move exists in full moves list
-                                full_move_names = [
-                                    move["name"] for move in self.mon_on_field["moves"]
-                                ]
+                            elif move_name is not None:
+                                # For specific move, verify it's valid
+                                full_move_names = [move.get("name") for move in self.mon_on_field["moves"] 
+                                                 if move.get("name") is not None]
+                                
                                 if move_name not in full_move_names:
                                     raise Exception(
                                         f"Move '{move_name}' not found in available moves: {full_move_names}"
                                     )
-
-                                # Check if move has PP > 0
-                                move_with_name = next(
-                                    move
-                                    for move in self.mon_on_field["moves"]
-                                    if move["name"] == move_name
-                                )
-                                if move_with_name.get("pp")["current"] <= 0:
-                                    raise Exception(
-                                        f"Move '{move_name}' has no PP remaining: {move_with_name}"
-                                    )
-
-                                # Check if move is in valid moves list
+                                
                                 if move_name not in valid_move_names:
+                                    # If move exists but not in valid_moves, it must have 0 PP
                                     raise Exception(
-                                        f"Move '{move_name}' cannot be selected (likely has 0 PP or invalid name)"
+                                        f"Move '{move_name}' has no PP remaining"
                                     )
 
-                            # Find the move in the filtered valid moves
+                            # Find and execute the selected move
                             selected_move = next(
-                                move
-                                for move in valid_moves
+                                move for move in valid_moves
                                 if move["name"] == move_name
                             )
 
                             # Use the original index from the full moves list for UI clicking
-                            original_index = self.mon_on_field["moves"].index(
-                                selected_move
+                            original_index = next(
+                                i for i, move in enumerate(self.mon_on_field["moves"])
+                                if move.get("name") == move_name
                             )
+                            
                             move_buttons = [
                                 ui.player1_mon_move1_text,
                                 ui.player1_mon_move2_text,
                                 ui.player1_mon_move3_text,
                                 ui.player1_mon_move4_text,
                             ]
+                            
                             if 0 <= original_index < len(move_buttons):
                                 self.click_ui([move_buttons[original_index]])
                             else:
                                 raise Exception(f"Move {move_name} not found with index {original_index}")
+                                
+                        except StopIteration:
+                            logger.error(f"Failed to find move: {move_name}")
                         except Exception as e:
-                            logger.error(f"Error choosing move: {e}")
+                            logger.error(f"Error in choose_move: {e}")
+                    case _:
+                        raise ValueError("Invalid battle state for choose_move")
             case _:
-                raise ValueError("Invalid state for choose_move")
+                raise ValueError("Must be logged in to choose a move")
 
     @action
     def close_attacks_menu(self) -> Action:
