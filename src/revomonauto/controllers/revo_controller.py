@@ -325,9 +325,8 @@ class RevoAppController(BluepyllController, RevomonApp):
             player1_mon_move1 = self.img_txt_checker.read_text(
                 ui.player1_mon_move1_text.path
             )
-            processed_move_data = process_move_data(player1_mon_move1)
-
             if player1_mon_move1:
+                processed_move_data = process_move_data(player1_mon_move1)
                 self.mon_on_field["moves"][0]["name"] = processed_move_data[0]
                 self.mon_on_field["moves"][0]["pp"]["current"] = int(
                     processed_move_data[1].split("/")[0]
@@ -339,8 +338,8 @@ class RevoAppController(BluepyllController, RevomonApp):
             player1_mon_move2 = self.img_txt_checker.read_text(
                 ui.player1_mon_move2_text.path
             )
-            processed_move_data = process_move_data(player1_mon_move2)
             if player1_mon_move2:
+                processed_move_data = process_move_data(player1_mon_move2)
                 self.mon_on_field["moves"][1]["name"] = processed_move_data[0]
                 self.mon_on_field["moves"][1]["pp"]["current"] = int(
                     processed_move_data[1].split("/")[0]
@@ -352,8 +351,8 @@ class RevoAppController(BluepyllController, RevomonApp):
             player1_mon_move3 = self.img_txt_checker.read_text(
                 ui.player1_mon_move3_text.path
             )
-            processed_move_data = process_move_data(player1_mon_move3)
             if player1_mon_move3:
+                processed_move_data = process_move_data(player1_mon_move3)
                 self.mon_on_field["moves"][2]["name"] = processed_move_data[0]
                 self.mon_on_field["moves"][2]["pp"]["current"] = int(
                     processed_move_data[1].split("/")[0]
@@ -366,14 +365,13 @@ class RevoAppController(BluepyllController, RevomonApp):
                 ui.player1_mon_move4_text.path
             )
             if player1_mon_move4:
-                self.mon_on_field["moves"][3]["name"] = process_move_data(
-                    player1_mon_move4
-                )[0]
+                processed_move_data = process_move_data(player1_mon_move4)
+                self.mon_on_field["moves"][3]["name"] = processed_move_data[0]
                 self.mon_on_field["moves"][3]["pp"]["current"] = int(
-                    process_move_data(player1_mon_move4)[1].split("/")[0]
+                    processed_move_data[1].split("/")[0]
                 )
                 self.mon_on_field["moves"][3]["pp"]["total"] = int(
-                    process_move_data(player1_mon_move4)[1].split("/")[1]
+                    processed_move_data[1].split("/")[1]
                 )
 
             logger.info("Current battle moves info extracted successfully")
