@@ -321,62 +321,28 @@ class RevoAppController(BluepyllController, RevomonApp):
                 image=screenshot_bytes,
             )
 
-            # Read text from the extracted regions
-            player1_mon_move1 = self.img_txt_checker.read_text(
-                ui.player1_mon_move1_text.path
-            )
-            if player1_mon_move1:
-                processed_move_data = process_move_data(player1_mon_move1)
-                if processed_move_data and len(processed_move_data) == 2:
-                    self.mon_on_field["moves"][0]["name"] = processed_move_data[0]
-                    self.mon_on_field["moves"][0]["pp"]["current"] = int(
-                        processed_move_data[1].split("/")[0]
-                    )
-                    self.mon_on_field["moves"][0]["pp"]["total"] = int(
-                    processed_move_data[1].split("/")[1]
-                    )
+            move_ui_elements = [
+                ui.player1_mon_move1_text,
+                ui.player1_mon_move2_text,
+                ui.player1_mon_move3_text,
+                ui.player1_mon_move4_text,
+            ]
 
-            player1_mon_move2 = self.img_txt_checker.read_text(
-                ui.player1_mon_move2_text.path
-            )
-            if player1_mon_move2:
-                processed_move_data = process_move_data(player1_mon_move2)
-                if processed_move_data and len(processed_move_data) == 2:
-                    self.mon_on_field["moves"][1]["name"] = processed_move_data[0]
-                    self.mon_on_field["moves"][1]["pp"]["current"] = int(
-                        processed_move_data[1].split("/")[0]
-                    )
-                    self.mon_on_field["moves"][1]["pp"]["total"] = int(
-                        processed_move_data[1].split("/")[1]
-                    )
+            for i, move_ui in enumerate(move_ui_elements):
+                move_text = self.img_txt_checker.read_text(move_ui.path)
+                if not move_text:
+                    continue
 
-            player1_mon_move3 = self.img_txt_checker.read_text(
-                ui.player1_mon_move3_text.path
-            )
-            if player1_mon_move3:
-                processed_move_data = process_move_data(player1_mon_move3)
+                processed_move_data = process_move_data(move_text)
                 if processed_move_data and len(processed_move_data) == 2:
-                    self.mon_on_field["moves"][2]["name"] = processed_move_data[0]
-                    self.mon_on_field["moves"][2]["pp"]["current"] = int(
-                        processed_move_data[1].split("/")[0]
-                    )
-                    self.mon_on_field["moves"][2]["pp"]["total"] = int(
-                    processed_move_data[1].split("/")[1]
-                    )
-
-            player1_mon_move4 = self.img_txt_checker.read_text(
-                ui.player1_mon_move4_text.path
-            )
-            if player1_mon_move4:
-                processed_move_data = process_move_data(player1_mon_move4)
-                if processed_move_data and len(processed_move_data) == 2:
-                    self.mon_on_field["moves"][3]["name"] = processed_move_data[0]
-                    self.mon_on_field["moves"][3]["pp"]["current"] = int(
-                        processed_move_data[1].split("/")[0]
-                    )
-                    self.mon_on_field["moves"][3]["pp"]["total"] = int(
-                        processed_move_data[1].split("/")[1]
-                    )
+                    try:
+                        pp_parts = processed_move_data[1].split("/")
+                        if len(pp_parts) == 2:
+                            self.mon_on_field["moves"][i]["name"] = processed_move_data[0]
+                            self.mon_on_field["moves"][i]["pp"]["current"] = int(pp_parts[0])
+                            self.mon_on_field["moves"][i]["pp"]["total"] = int(pp_parts[1])
+                    except (ValueError, IndexError) as e:
+                        logger.error(f"Error parsing PP for move {i+1}: {processed_move_data[1]} - {e}")
 
             logger.info("Current battle moves info extracted successfully")
             logger.info(
