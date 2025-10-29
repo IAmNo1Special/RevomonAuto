@@ -2026,7 +2026,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                                         continue
                     case "choose_move":
                         while self.is_waiting_for_opponent():
-                            continue
+                            time.sleep(0.5)
                         match self.is_overworld_scene():
                             case True:
                                 logger.info("Opening main menu...")
