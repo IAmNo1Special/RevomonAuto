@@ -88,7 +88,7 @@ uv run tests/test.py
 
 ## Adding new automation
 
-1. Define new UI targets in `src/revomonauto/revomon/revomon_ui.py` as `UIElement` entries with accurate `path`, `position`, `size`, `confidence` and optional `ele_txt`.
+1. Define new UI targets in `src/revomonauto/revomon/revomon_ui.py` as `UIElement` entries with accurate `path`, `position`, `size`, and optional `confidence` and `ele_txt`.
 2. Implement a controller method in `src/revomonauto/controllers/revo_controller.py`:
    - Decorate with `@action`.
    - Gate behavior on the appropriate state machines (see `models/revo_app.py`).
