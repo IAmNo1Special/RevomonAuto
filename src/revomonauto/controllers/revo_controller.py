@@ -986,7 +986,7 @@ class RevoAppController(BluepyllController, RevomonApp):
                             ]
                             
                             if 0 <= original_index < len(move_buttons):
-                                return self.actions.click_ui([move_buttons[original_index]])
+                                return self.click_ui([move_buttons[original_index]])
                             else:
                                 raise RuntimeError(f"Move index {original_index} out of range for move: {move_name}")
                                 
