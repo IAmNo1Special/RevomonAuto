@@ -48,7 +48,7 @@ python -V
 - `src/revomonauto/revomon/revomon_ui.py`
   Static UI descriptors as `UIElement` instances with image template paths, screen `position` and `size`. These drive `click_ui(...)` targeting and define OCR regions for battle info extraction.
 
-- `test.py`
+- `tests/test.py`
   Example script showing the intended usage of `RevoAppController` end-to-end.
 
 ## Running the demo
@@ -56,10 +56,10 @@ python -V
 From the repository root:
 
 ```powershell
-uv run test.py
+uv run tests/test.py
 ```
 
-`test.py` will:
+`tests/test.py` will:
 
 - Instantiate `RevoAppController`.
 - Open the Revomon app, start the game, and log in.
@@ -88,16 +88,16 @@ uv run test.py
 
 ## Adding new automation
 
-1. Define new UI targets in `src/revomonauto/revomon/revomon_ui.py` as `UIElement` entries with accurate `path`, `position`, `size`, and optional `confidence`/`ele_txt`.
+1. Define new UI targets in `src/revomonauto/revomon/revomon_ui.py` as `UIElement` entries with accurate `path`, `position`, `size`, and optional `confidence` and `ele_txt`.
 2. Implement a controller method in `src/revomonauto/controllers/revo_controller.py`:
    - Decorate with `@action`.
    - Gate behavior on the appropriate state machines (see `models/revo_app.py`).
    - Use Bluepyll helpers like `click_ui`, `click_coords`, and `capture_screenshot`.
-3. Update or create a script like `test.py` to exercise the new flow.
+3. Update or create a script like `tests/test.py` to exercise the new flow.
 
 ## Logs and artifacts
 
-- The demo logs to console and a timestamped file (from `test.py`).
+- The demo logs to console and a timestamped file (from `tests/test.py`).
 - OCR crops are saved under `src/revomonauto/revomon/battles/` by label.
 - If interactions fail, check `controller.actions` at the end of a run to inspect state diffs and the last successful step.
 
@@ -114,5 +114,3 @@ uv run test.py
 - OCR results are noisy:
   - Inspect the cropped images in `src/revomonauto/revomon/battles/`.
   - Adjust region `position`/`size` in `revomon_ui.py` or refine post-processing in the controller.
-
-## License
