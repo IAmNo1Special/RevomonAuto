@@ -33,6 +33,7 @@ class BattleState(Enum):
     IN_BATTLE = auto()
     BATTLE_BAG_OPEN = auto()
     ATTACKS_MENU_OPEN = auto()
+    WAITING_FOR_OPPONENT = auto()
 
     @classmethod
     def get_transitions(cls) -> dict:
@@ -65,9 +66,11 @@ class BattleState(Enum):
                 cls.NOT_IN_BATTLE,  # Battle ended or the app was closed
                 cls.BATTLE_BAG_OPEN,  # Battle bag opened
                 cls.ATTACKS_MENU_OPEN,  # Attacks menu opened
+                cls.WAITING_FOR_OPPONENT,  # Waiting for opponent
             ],
             cls.BATTLE_BAG_OPEN: [cls.IN_BATTLE, cls.NOT_IN_BATTLE],
-            cls.ATTACKS_MENU_OPEN: [cls.IN_BATTLE, cls.NOT_IN_BATTLE],
+            cls.ATTACKS_MENU_OPEN: [cls.IN_BATTLE, cls.NOT_IN_BATTLE, cls.WAITING_FOR_OPPONENT],
+            cls.WAITING_FOR_OPPONENT: [cls.IN_BATTLE, cls.NOT_IN_BATTLE],
         }
 
 
@@ -171,3 +174,39 @@ class RevomonApp(BluePyllApp):
 
         self.mon_details_img = None
         self.mon_detail_imgs = None
+
+        self.team = None  # [{name: xxxx, level: xx, type: xxxx, ability: xxxx, nature: xxxx, current_hp: xx, max_hp: xx, moves: [xxxx, xxxx, xxxx, xxxx],}, ...]
+        self.mon_on_field = {
+            "name": None,
+            "level": None,
+            "current_hp_percentage": None,
+            "current_hp": None,
+            "max_hp": None,
+            "ability": None,
+            "nature": None,
+            "moves": [
+                {"name": None, "type": None, "pp": {"current": None, "total": None}},
+                {"name": None, "type": None, "pp": {"current": None, "total": None}},
+                {"name": None, "type": None, "pp": {"current": None, "total": None}},
+                {"name": None, "type": None, "pp": {"current": None, "total": None}},
+            ],
+        }
+        self.last_move_used = None  # {used_by: xxxx, move_name: xxxx, move_type: xxxx, starting_pp: xx, ending_pp: xx, total_pp: xx}
+
+        self.opps_team = None  # [{name: xxxx, level: xx, type: xxxx, ability: xxxx, nature: xxxx, current_hp: xx, max_hp: xx, moves: [xxxx, xxxx, xxxx, xxxx],}, ...]
+        self.opps_mon_on_field = {
+            "name": None,
+            "level": None,
+            "current_hp_percentage": None,
+            "current_hp": None,
+            "max_hp": None,
+            "ability": None,
+            "nature": None,
+            "moves": [
+                {"name": None, "type": None, "pp": {"current": None, "total": None}},
+                {"name": None, "type": None, "pp": {"current": None, "total": None}},
+                {"name": None, "type": None, "pp": {"current": None, "total": None}},
+                {"name": None, "type": None, "pp": {"current": None, "total": None}},
+            ],
+        }
+        self.opps_last_move_used = None  # {used_by: xxxx, move_name: xxxx, move_type: xxxx, starting_pp: xx, ending_pp: xx, total_pp: xx}

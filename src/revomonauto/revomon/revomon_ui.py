@@ -232,9 +232,9 @@ general_chat_button = UIElement(
 chat_log_image = UIElement(
     label="chat_log_image",
     ele_type="image",
-    path=str(BASE_DIR / "game_ui" / "chat" / "chat_log_image.png"),
+    path=str(BASE_DIR / "battles" / "chat_log_image.png"),
     position=(1490, 220),
-    size=(430, 775),
+    size=(435, 775),
     is_static=False,
 )
 
@@ -532,9 +532,9 @@ player1_mon_name_text = UIElement(
 player1_mon_nameplate_pixel = UIElement(
     label="player1_mon_nameplate_pixel",
     ele_type="pixel",
-    position=(346, 126),
+    position=(290, 130),
     size=(1, 1),
-    pixel_color=(0, 210, 155),
+    pixel_color=(0, 206, 155),
 )
 
 player1_mon_lvl_text = UIElement(
@@ -546,13 +546,13 @@ player1_mon_lvl_text = UIElement(
     is_static=True,
 )
 
-player1_mon_hp_text = UIElement(
+player1_mon_hp_img = UIElement(
     label="player1_mon_hp",
-    ele_type="text",
+    ele_type="image",
     path=str(BASE_DIR / "battles" / "player1_mon_hp.png"),
     position=(0, 5),
     size=(410, 43),
-    is_static=True,
+    is_static=False,
 )
 
 player1_mon_move1_text = UIElement(
@@ -603,9 +603,9 @@ player2_mon_name_text = UIElement(
 player2_mon_nameplate_pixel = UIElement(
     label="player2_mon_nameplate_pixel",
     ele_type="pixel",
-    position=(1577, 115),
+    position=(1620, 130),
     size=(1, 1),
-    pixel_color=(0, 210, 155),
+    pixel_color=(0, 201, 154),
 )
 player2_mon_lvl_text = UIElement(
     label="player2_mon_lvl",
@@ -616,13 +616,22 @@ player2_mon_lvl_text = UIElement(
     is_static=True,
 )
 
-player2_mon_hp_text = UIElement(
+player2_mon_hp_img = UIElement(
     label="player2_mon_hp",
-    ele_type="text",
+    ele_type="image",
     path=str(BASE_DIR / "battles" / "player2_mon_hp.png"),
     position=(1510, 5),
     size=(410, 43),
-    is_static=True,
+    is_static=False,
+)
+
+waiting_for_opponent_text = UIElement(
+    label="waiting_for_opponent_text",
+    ele_type="text",
+    path=str(BASE_DIR / "battles" / "waiting_for_opponent_text.png"),
+    position=(577, 906),
+    size=(777, 75),
+    is_static=False,
 )
 
 ########################### REVOCENTER SCENE #############################

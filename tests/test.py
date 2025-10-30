@@ -70,104 +70,102 @@ if __name__ == "__main__":
 
         controller = RevoAppController()
 
-        logger.info("Opening Revomon app...")
+        show_overlay("Opening Revomon app...")
         controller.open_revomon_app()
 
-        logger.info("Starting game...")
+        show_overlay("Starting game...")
         controller.start_game()
 
-        logger.info("Logging in...")
+        show_overlay("Logging in...")
         controller.log_in()
 
-        logger.info("Opening main menu...")
+        show_overlay("Opening main menu...")
         controller.open_main_menu()
 
         time.sleep(1.0)
 
-        logger.info("Closing main menu...")
+        show_overlay("Closing main menu...")
         controller.close_main_menu()
 
-        logger.info("Entering PVP queue...")
+        show_overlay("Entering PVP queue...")
         controller.enter_pvp_queue()
 
         time.sleep(1.0)
 
-        logger.info("Exiting PVP queue...")
+        show_overlay("Exiting PVP queue...")
         controller.exit_pvp_queue()
 
-        logger.info("Opening wardrobe...")
+        show_overlay("Opening wardrobe...")
         controller.open_wardrobe()
 
         time.sleep(1.0)
 
-        logger.info("Closing wardrobe")
+        show_overlay("Closing wardrobe")
         controller.close_wardrobe()
 
-        logger.info("Opening menu bag...")
+        show_overlay("Opening menu bag...")
         controller.open_menu_bag()
 
         time.sleep(1.0)
 
-        logger.info("Closing menu bag...")
+        show_overlay("Closing menu bag...")
         controller.close_menu_bag()
 
-        logger.info("Opening friends list...")
+        show_overlay("Opening friends list...")
         controller.open_friends_list()
 
         time.sleep(1.0)
 
-        logger.info("Closing friends list...")
+        show_overlay("Closing friends list...")
         controller.close_friends_list()
 
-        logger.info("Opening settings...")
+        show_overlay("Opening settings...")
         controller.open_settings()
 
         time.sleep(1.0)
 
-        logger.info("Closing settings...")
+        show_overlay("Closing settings...")
         controller.close_settings()
 
-        logger.info("Opening revodex...")
+        show_overlay("Opening revodex...")
         controller.open_revodex()
 
         time.sleep(1.0)
 
-        logger.info("Closing revodex...")
+        show_overlay("Closing revodex...")
         controller.close_revodex()
 
-        logger.info("Opening market...")
+        show_overlay("Opening market...")
         controller.open_market()
 
         time.sleep(1.0)
 
-        logger.info("Closing market...")
+        show_overlay("Closing market...")
         controller.close_market()
 
-        logger.info("Opening discussion...")
+        show_overlay("Opening discussion...")
         controller.open_discussion()
 
         time.sleep(1.0)
 
-        logger.info("Closing discussion...")
+        show_overlay("Closing discussion...")
         controller.close_discussion()
 
-        logger.info("Opening clan...")
+        show_overlay("Opening clan...")
         controller.open_clan()
-
-        input("Press Enter to continue...")
 
         time.sleep(1.0)
 
-        logger.info("Closing clan...")
+        show_overlay("Closing clan...")
         controller.close_clan()
 
-        logger.info("Closing main menu...")
+        show_overlay("Closing main menu...")
         controller.close_main_menu()
 
-        logger.info("Opening TV...")
+        show_overlay("Opening TV...")
         controller.open_tv()
 
-        logger.info("Switching TV slots...")
+        show_overlay("Switching TV slots...")
         controller.select_tv_slot(1)
 
         time.sleep(1.0)
@@ -180,58 +178,54 @@ if __name__ == "__main__":
 
         time.sleep(1.0)
 
-        logger.info("Searching for Gorlit...")
+        show_overlay("Searching for Gorlit...")
         controller.tv_search_for_revomon("Gorlit")
 
         time.sleep(1.0)
 
-        logger.info("Closing TV...")
+        show_overlay("Closing TV...")
         controller.close_tv()
 
-        input("Press Enter to continue...")
+        input("Press Enter once you are in a battle to continue...")
 
-        logger.info("Opening attacks menu...")
-        controller.open_attacks_menu()
+        if controller.is_in_battle_scene():
+            show_overlay("Opening attacks menu...")
+            controller.open_attacks_menu()
 
-        time.sleep(1.0)
+            time.sleep(1.0)
 
-        logger.info("Extracting current battle moves info...")
-        controller.extract_current_battle_moves_info()
+            show_overlay("choosing random attack...")
+            controller.choose_move(choose_random=True)
 
-        logger.info("Closing attacks menu...")
-        controller.close_attacks_menu()
+            show_overlay("Closing attacks menu...")
+            controller.close_attacks_menu()
 
-        input("Press Enter to continue...")
 
-        logger.info("Opening battle bag...")
-        controller.open_battle_bag()
+            show_overlay("Opening battle bag...")
+            controller.open_battle_bag()
 
-        time.sleep(1.0)
+            time.sleep(1.0)
 
-        logger.info("Closing battle bag...")
-        controller.close_battle_bag()
+            show_overlay("Closing battle bag...")
+            controller.close_battle_bag()
 
-        input("Press Enter to continue...")
+            show_overlay("Running from battle...")
+            controller.run_from_battle()
 
-        logger.info("Running from battle...")
-        controller.run_from_battle()
-
-        input("Press Enter to continue...")
-
-        logger.info("Quting game...")
+        show_overlay("Quting game...")
         controller.quit_game()
 
-        # logger.info("Closing app...")
+        # show_overlay("Closing app...")
         # print(controller.close_app(app=controller))
 
-        # logger.info("Killing Bluestacks...")
+        # show_overlay("Killing Bluestacks...")
         # print(controller.kill_bluestacks())
 
-        logger.info("Controller Test: PASSED!")
+        show_overlay("Controller Test: PASSED!")
 
     except Exception as e:
 
-        logger.error(f"Controller Test: FAILED!\nError: {e}")
+        show_overlay(f"Controller Test: FAILED!\nError: {e}")
         exit(1)
 
     finally:

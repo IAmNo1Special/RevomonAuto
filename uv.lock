@@ -15,7 +15,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/8f/73/d246034db6f3e374d
 
 [[package]]
 name = "bluepyll"
-version = "0.0.9"
+version = "0.0.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "adb-shell" },
@@ -27,9 +27,9 @@ dependencies = [
     { name = "pywin32" },
     { name = "scikit-image" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/54/3b/8f50ebbe4d1bbe2927ea98c85205a8e46961ab32fbb965f27aa01ee1d039/bluepyll-0.0.9.tar.gz", hash = "sha256:04ae27dff85e54f8ca9c5e4075e8edc42773c17ab7982e84bc82d66c9d3c5c70", size = 173662, upload-time = "2025-10-21T17:16:38.864Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c6/e9/1e6ff1b29dbd161415f565cdbc9bd55f09f7a203d51d0265c823ea550822/bluepyll-0.0.10.tar.gz", hash = "sha256:3dcc4544706bc09eb092158c5ed6a9a556208d5f8655a905a1f7cfc04997be09", size = 173627, upload-time = "2025-10-25T23:04:03.149Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/73/ab/814722b003470e2553b6867473df129ffadc74cc403425aaad718a00b22c/bluepyll-0.0.9-py3-none-any.whl", hash = "sha256:de1d6079977bef59e8cffd6b490957d966377eedd0e7b1d1db4896b2331c4e10", size = 140227, upload-time = "2025-10-21T17:16:37.484Z" },
+    { url = "https://files.pythonhosted.org/packages/79/44/165ad0cfeadbdf7c9ba32bb9c65fb4cf857106f1c8f6b0171f2581c11843/bluepyll-0.0.10-py3-none-any.whl", hash = "sha256:7f2f3c68cd752d7cb9cb9807fe44a97d7ec343567670a11ac930e4c6b6103ae6", size = 140206, upload-time = "2025-10-25T23:04:02.162Z" },
 ]
 
 [[package]]
@@ -820,7 +820,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "bluepyll", specifier = ">=0.0.9" },
+    { name = "bluepyll", specifier = "==0.0.10" },
     { name = "pillow", specifier = ">=11.3.0" },
 ]
 
