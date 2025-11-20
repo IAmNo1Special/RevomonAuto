@@ -9,7 +9,6 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "bluepyll==0.1.15",
-    "pillow>=11.3.0",
 ]
 
 [build-system]

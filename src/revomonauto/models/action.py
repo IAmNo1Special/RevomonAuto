@@ -93,15 +93,18 @@ def action(func):
             return value
 
         old_state = {
-            "current_scene": get_state_value(self.curr_scene),
+            "current_screen": get_state_value(self.curr_screen),
             "tv_current_page": get_state_value(self.tv_current_page),
             "tv_slot_selceted": get_state_value(self.tv_slot_selected),
             "tv_searching_for": get_state_value(self.tv_searching_for),
             "current_city": get_state_value(self.current_city),
             "current_location": get_state_value(self.current_location),
             "bluestacks_state": get_state_value(
-                self.bluestacks_state.current_state
-                if hasattr(self.bluestacks_state, "current_state")
+                self.bluepyll_controller.bluestacks.bluestacks_state.current_state
+                if hasattr(
+                    self.bluepyll_controller.bluestacks.bluestacks_state,
+                    "current_state",
+                )
                 else None
             ),
             "app_state": get_state_value(
@@ -109,26 +112,8 @@ def action(func):
                 if hasattr(self.app_state, "current_state")
                 else None
             ),
-            "login_state": get_state_value(
-                self.login_sm.current_state
-                if hasattr(self.login_sm, "current_state")
-                else None
-            ),
-            "menu_state": get_state_value(
-                self.menu_sm.current_state
-                if hasattr(self.menu_sm, "current_state")
-                else None
-            ),
-            "battle_state": get_state_value(
-                self.battle_sm.current_state
-                if hasattr(self.battle_sm, "current_state")
-                else None
-            ),
-            "tv_state": get_state_value(
-                self.tv_sm.current_state
-                if hasattr(self.tv_sm, "current_state")
-                else None
-            ),
+            "game_state": get_state_value(self.game_state),
+            "battle_sub_state": get_state_value(self.battle_sub_state),
         }
 
         # Create a new action
@@ -138,7 +123,7 @@ def action(func):
             func(self, *args, **kwargs)
             self.wait_for_action(action=func.__name__)
             new_state = {
-                "current_scene": get_state_value(self.curr_scene),
+                "current_screen": get_state_value(self.curr_screen),
                 "tv_current_page": get_state_value(self.tv_current_page),
                 "tv_slot_selceted": get_state_value(self.tv_slot_selected),
                 "tv_searching_for": get_state_value(self.tv_searching_for),
@@ -154,26 +139,8 @@ def action(func):
                     if hasattr(self.app_state, "current_state")
                     else None
                 ),
-                "login_state": get_state_value(
-                    self.login_sm.current_state
-                    if hasattr(self.login_sm, "current_state")
-                    else None
-                ),
-                "menu_state": get_state_value(
-                    self.menu_sm.current_state
-                    if hasattr(self.menu_sm, "current_state")
-                    else None
-                ),
-                "battle_state": get_state_value(
-                    self.battle_sm.current_state
-                    if hasattr(self.battle_sm, "current_state")
-                    else None
-                ),
-                "tv_state": get_state_value(
-                    self.tv_sm.current_state
-                    if hasattr(self.tv_sm, "current_state")
-                    else None
-                ),
+                "game_state": get_state_value(self.game_state),
+                "battle_sub_state": get_state_value(self.battle_sub_state),
             }
             current_action.update(
                 {

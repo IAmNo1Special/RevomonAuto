@@ -815,14 +815,10 @@ version = "0.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "bluepyll" },
-    { name = "pillow" },
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "bluepyll", specifier = "==0.1.15" },
-    { name = "pillow", specifier = ">=11.3.0" },
-]
+requires-dist = [{ name = "bluepyll", specifier = "==0.1.15" }]
 
 [[package]]
 name = "rsa"
