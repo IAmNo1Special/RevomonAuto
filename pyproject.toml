@@ -1,6 +1,6 @@
 [project]
 name = "revomonauto"
-version = "0.2.1"
+version = "0.3.0"
 description = "Automation helpers for the Revomon Android game running under BlueStacks, built on top of the Bluepyll automation framework."
 readme = "README.md"
 authors = [
@@ -8,8 +8,7 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "bluepyll==0.0.10",
-    "pillow>=11.3.0",
+    "bluepyll==0.1.15",
 ]
 
 [build-system]

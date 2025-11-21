@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 def test_clients():
     """Test all new clients."""
     try:
-        from revomonauto.revomon.clients import (
+        from revomonauto.data.gradex_clients import (
             BattleMechanicsClient,
             EvolutionClient,
             WeatherClient,
@@ -86,8 +86,8 @@ def test_clients():
         print(f"   • Moves loaded: {move_count}")
         print(f"   • Weather conditions: {len(weather_conditions)}")
         print(f"   • Status conditions: {len(status_conditions)}")
-        print(f"   • Evolution trees: Available")
-        print(f"   • Battle mechanics: Ready for calculation")
+        print("   • Evolution trees: Available")
+        print("   • Battle mechanics: Ready for calculation")
 
         return True
 

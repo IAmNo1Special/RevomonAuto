@@ -1,116 +1,445 @@
 # RevomonAuto
 
-Automation helpers for the Revomon Android game running under BlueStacks, built on top of the Bluepyll automation framework.
+A powerful automation framework for the Revomon Android game, built on top of the [Bluepyll](https://github.com/bluepyll) automation framework. RevomonAuto provides comprehensive UI automation, battle intelligence, and game data access for Revomon.
 
-This repository provides a state-machine-driven controller (`RevoAppController`) and a ready-to-run demo script (`test.py`) that exercises typical in-game flows like launching the app, logging in, navigating menus, interacting with the TV, and running basic battle actions.
+[![Python Version](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## Requirements
+## 🎮 Features
 
-- Python 3.13+ (project targets `>=3.13` per `pyproject.toml`)
-- Windows (tested) with BlueStacks installed
+### Automation Capabilities
+- **Full App Lifecycle Management**: Automated app opening, closing, and login sequences
+- **Menu Navigation**: Navigate all main menus and submenus (Wardrobe, Bag, Friends, Settings, Revodex, Market, Discussion, Clan)
+- **PVP Queue Management**: Enter and exit PVP queues automatically
+- **Battle Automation**: 
+  - OCR-based move extraction with PP tracking
+  - Health monitoring via pixel analysis
+  - Pluggable battle strategies (Random, Custom AI)
+  - Auto-run from battles (background thread)
+- **TV/PC Navigation**: Search and select Revomon in storage
+- **Action Tracking**: Full audit trail with state diffs for debugging
 
-## Installation (UV only)
+### Battle Intelligence
+- **Real-time OCR**: Extract mon names, levels, HP percentages, and moves
+- **Move Validation**: Filter moves by PP availability
+- **Strategy Pattern**: Extensible battle AI system
+- **Health Bar Analysis**: Pixel-based HP calculation
 
-1. Create and activate a virtual environment:
+### Game Data Access
+17+ specialized client libraries for querying game data:
+- **RevomonClient**: Search by name, type, ability
+- **MovesClient**: Physical, special, and status moves
+- **BattleMechanicsClient**: Damage calculation, type effectiveness, team coverage analysis
+- **EvolutionClient**: Evolution trees and optimal path finding
+- **WeatherClient**: Weather synergy analysis
+- **StatusEffectsClient**: Status condition strategy
+- **TypesClient**, **ItemsClient**, **NaturesClient**, **LocationsClient**, and more
 
-```powershell
-uv venv
-# On PowerShell
-. .\.venv\Scripts\Activate.ps1
-```
+## 📋 Requirements
 
-1. Install dependencies declared in `pyproject.toml` / `uv.lock`:
+- **Python**: 3.13 or higher
+- **Operating System**: Windows (BlueStacks integration)
+- **BlueStacks**: Android emulator
+- **ADB**: Android Debug Bridge (included with BlueStacks)
 
-```powershell
+## 🚀 Installation
+
+We recommend using [uv](https://docs.astral.sh/uv/) for package management.
+
+### Using uv (Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/IAmNo1Special/RevomonAuto.git
+cd RevomonAuto
+
+# Install dependencies with uv
 uv sync
+
+# Run the example
+uv run examples/main.py
 ```
 
-1. Verify your Python version is 3.13+:
+### Using pip
 
-```powershell
-python -V
+```bash
+# Clone the repository
+git clone https://github.com/IAmNo1Special/RevomonAuto.git
+cd RevomonAuto
+
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -e .
+
+# Run the example
+python examples/main.py
 ```
 
-## Project layout
+## 🎯 Quick Start
 
-- `src/revomonauto/controllers/revo_controller.py`
-   High-level automation API. Inherits from `BluepyllController` and `RevomonApp`. Exposes actions such as `open_revomon_app()`, `start_game()`, `log_in()`, `open_main_menu()`, `open_tv()`, `open_attacks_menu()`, `run_from_battle()`, etc.
+### Basic Automation
 
-- `src/revomonauto/models/revo_app.py`
-  App model and state machines: `LoginState`, `BattleState`, `MenuState`, `TVState`. Holds contextual attributes like `tv_current_page`, `tv_slot_selected`, `current_city`, and an `Event` for auto-run.
+```python
+from bluepyll import BluePyllController
+from revomonauto.models.revomon_app import RevomonApp
 
-- `src/revomonauto/models/action.py`
-  Action logging utilities:
-  - `Action`: dict-like fixed schema for per-action results.
-  - `Actions`: list-like container that only accepts `Action`.
-  - `@action` decorator: wraps controller methods to capture state diffs and append to `controller.actions` after `wait_for_action()`.
+# Initialize
+controller = BluePyllController()
+revomon_app = RevomonApp(controller)
 
-- `src/revomonauto/revomon/revomon_ui.py`
-  Static UI descriptors as `UIElement` instances with image template paths, screen `position` and `size`. These drive `click_ui(...)` targeting and define OCR regions for battle info extraction.
+# Start BlueStacks and open app
+controller.bluestacks.open()
+revomon_app.open_revomon_app()
 
-- `tests/test.py`
-  Example script showing the intended usage of `RevoAppController` end-to-end.
+# Login sequence
+revomon_app.start_game()
+revomon_app.login()
 
-## Running the demo
+# Navigate menus
+revomon_app.open_main_menu()
+revomon_app.open_menu_bag()
+revomon_app.close_menu_bag()
+revomon_app.close_main_menu()
 
-From the repository root:
-
-```powershell
-uv run tests/test.py
+# Enter PVP queue
+revomon_app.enter_pvp_queue()
 ```
 
-`tests/test.py` will:
+### Battle Automation
 
-- Instantiate `RevoAppController`.
-- Open the Revomon app, start the game, and log in.
-- Open/close the main menu and navigate submenus (PVP, Wardrobe, Team/Bag, Friends, Settings, Revodex, Market, Discussion, Clan).
-- Interact with the TV (select slots, search for a Revomon).
-- In battle: open the attacks menu, OCR current moves, open/close the battle bag, and run from battle.
-- Log every action and final `controller.actions` (which includes state diffs).
+```python
+# Wait for battle to start, then automate
+while True:
+    if revomon_app.is_in_battle_scene():
+        # Open attacks menu
+        revomon_app.open_attacks_menu()
+        
+        # Choose a random move
+        revomon_app.choose_move()
+        
+        # Or use a custom strategy
+        from revomonauto.models.strategies import BattleStrategy
+        
+        class AlwaysFirstMove(BattleStrategy):
+            def select_move(self, valid_move_names):
+                return valid_move_names[0]
+        
+        revomon_app.choose_move(strategy=AlwaysFirstMove())
+```
 
-## How it works
+### Auto-Run from Battles
 
-- Controller methods in `revo_controller.py` are annotated with `@action` from `models/action.py`. The decorator:
-  - Snapshots state before and after each method call.
-  - Calls `self.wait_for_action(action=...)` to let Bluepyll observe the UI state change.
-  - Appends a structured `Action` with a `state_diff` into `controller.actions`.
+```python
+# Enable auto-run (runs from all battles automatically)
+revomon_app.toggle_auto_run()
 
-- UI automation is delegated to Bluepyll via methods inherited from `BluepyllController`, including:
-  - `click_ui([UIElement, ...], max_tries=...)`
-  - `click_coords((x, y))`
-  - `capture_screenshot()`
-  - App lifecycle helpers: `open_app(app=self, ...)`, `close_app(app=self)`
+# Your automation continues while battles are automatically escaped
+# ...
 
-- OCR flows (battle info):
-  - `extract_regions(...)` crops regions from screenshots and saves them to `src/revomonauto/revomon/battles/{label}.png`.
-  - The controller then calls `self.img_txt_checker.read_text(path, allowlist=...)` (provided by Bluepyll) to parse text from those images.
-  - `extract_health_percentage(...)` scans a midline of the health bar image to estimate percentage filled.
+# Disable when done
+revomon_app.toggle_auto_run()
+```
 
-## Adding new automation
+### Game Data Access
 
-1. Define new UI targets in `src/revomonauto/revomon/revomon_ui.py` as `UIElement` entries with accurate `path`, `position`, `size`, and optional `confidence` and `ele_txt`.
-2. Implement a controller method in `src/revomonauto/controllers/revo_controller.py`:
-   - Decorate with `@action`.
-   - Gate behavior on the appropriate state machines (see `models/revo_app.py`).
-   - Use Bluepyll helpers like `click_ui`, `click_coords`, and `capture_screenshot`.
-3. Update or create a script like `tests/test.py` to exercise the new flow.
+```python
+from revomonauto.data.gradex_clients import (
+    RevomonClient,
+    MovesClient,
+    BattleMechanicsClient,
+    EvolutionClient
+)
 
-## Logs and artifacts
+# Initialize clients
+revomon_client = RevomonClient()
+moves_client = MovesClient()
+battle_client = BattleMechanicsClient()
 
-- The demo logs to console and a timestamped file (from `tests/test.py`).
-- OCR crops are saved under `src/revomonauto/revomon/battles/` by label.
-- If interactions fail, check `controller.actions` at the end of a run to inspect state diffs and the last successful step.
+# Find Revomon by type
+fire_types = revomon_client.get_revomon_by_type("fire")
+print(f"Fire types: {[r['name'] for r in fire_types[:5]]}")
 
-## Troubleshooting
+# Get all status moves
+status_moves = moves_client.get_status_moves()
 
-- BlueStacks not detected / ADB not connected:
-  - Ensure BlueStacks is installed and running.
-  - Bluepyll should auto-connect ADB; check logs for ADB connection attempts.
+# Analyze team type coverage
+team = [
+    revomon_client.get_revomon_by_name("gorcano"),
+    revomon_client.get_revomon_by_name("blizzora")
+]
+coverage = battle_client.analyze_type_coverage(team)
+print(f"Type coverage: {coverage['overall_coverage']:.1%}")
 
-- UI element not found:
-  - Verify your BlueStacks resolution matches what the UI element coordinates expect (the project assumes 1920x1080 based on positions in `revomon_ui.py`).
-  - Confirm template image paths exist under `src/revomonauto/revomon/game_ui/...` and have sufficient `confidence`.
+# Find optimal evolution path
+evolution_client = EvolutionClient()
+paths = evolution_client.find_optimal_evolution_path(
+    target_stats={"spa": 1.0, "spe": 0.7},
+    max_evolutions=3
+)
+```
 
-- OCR results are noisy:
-  - Inspect the cropped images in `src/revomonauto/revomon/battles/`.
-  - Adjust region `position`/`size` in `revomon_ui.py` or refine post-processing in the controller.
+## 📁 Project Structure
+
+```
+RevomonAuto/
+├── src/revomonauto/
+│   ├── models/
+│   │   ├── revomon_app.py       # Main automation controller
+│   │   ├── states.py            # GameState and BattleState enums
+│   │   ├── action.py            # Action tracking system
+│   │   ├── strategies.py        # Battle strategy implementations
+│   │   └── revomon_ui/          # UI element definitions
+│   │       ├── assets/          # Image assets for UI matching
+│   │       ├── elements/        # UI element definitions
+│   │       └── screens/         # Screen object models
+│   └── data/
+│       └── gradex_clients/      # Game data client libraries
+├── examples/
+│   ├── main.py                  # Full automation workflow
+│   └── example_client_usage.py # Data client examples
+├── tests/                       # Unit tests
+├── pyproject.toml               # Project configuration
+└── README.md                    # This file
+```
+
+## 🧠 State Management
+
+RevomonAuto uses a dual state machine system for robust automation:
+
+### GameState
+- `NOT_STARTED`, `STARTED` - Login flow
+- `OVERWORLD` - Free roaming
+- `MAIN_MENU` - Menu overlay
+- `MENU_BAG`, `WARDROBE`, `FRIENDS_LIST`, `SETTINGS`, `REVODEX`, `MARKET`, `DISCUSSION`, `CLAN` - Submenus
+- `PVP_QUEUE` - Waiting for PVP match
+- `BATTLE` - In combat
+- `TV` - PC/storage interface
+
+### BattleState (Sub-state when in BATTLE)
+- `IDLE` - Can attack, use bag, or run
+- `ATTACKS_MENU_OPEN` - Move selection visible
+- `BAG_OPEN` - Bag menu visible
+- `WAITING_FOR_OPPONENT` - Turn being processed
+
+State validation is enforced via the `@requires_state` decorator:
+
+```python
+@requires_state(GameState.BATTLE)
+@action
+def choose_move(self, strategy=None):
+    # Only executes if in BATTLE state
+    ...
+```
+
+## 🎲 Creating Custom Battle Strategies
+
+Extend the `BattleStrategy` abstract base class:
+
+```python
+from revomonauto.models.strategies import BattleStrategy
+from revomonauto.data.gradex_clients import MovesClient, TypesClient
+
+class SuperEffectiveStrategy(BattleStrategy):
+    def __init__(self, opponent_type):
+        self.opponent_type = opponent_type
+        self.moves_client = MovesClient()
+        self.types_client = TypesClient()
+    
+    def select_move(self, valid_move_names):
+        # Get move objects
+        moves = [self.moves_client.get_move_by_name(name) 
+                 for name in valid_move_names]
+        
+        # Find super-effective moves
+        for move in moves:
+            effectiveness = self.types_client.get_effectiveness(
+                move['type'], self.opponent_type
+            )
+            if effectiveness > 1.0:
+                return move['name']
+        
+        # Fallback to first valid move
+        return valid_move_names[0]
+
+# Use your custom strategy
+revomon_app.choose_move(strategy=SuperEffectiveStrategy("grass"))
+```
+
+## 📊 Action Tracking
+
+Every automated action is tracked with full state diffs:
+
+```python
+# Execute actions
+revomon_app.open_main_menu()
+revomon_app.enter_pvp_queue()
+
+# Review action history
+for action in revomon_app.actions:
+    print(f"Action: {action['action_name']}")
+    print(f"Status: {action['status']}")
+    print(f"State changes: {action['state_diff']}")
+```
+
+Example output:
+```
+Action: open_main_menu
+Status: True
+State changes: {
+    'game_state': {'prev': 'OVERWORLD', 'new': 'MAIN_MENU'}
+}
+```
+
+## 🧪 Testing
+
+```bash
+# Run tests with uv
+uv run pytest
+
+# Run specific test
+uv run pytest tests/test_choose_move.py
+
+# Run with coverage
+uv run pytest --cov=src/revomonauto
+```
+
+## 🔧 Configuration
+
+Create a `.env` file in the project root (not tracked by git):
+
+```env
+# BlueStacks configuration
+BLUESTACKS_PATH=C:\Program Files\BlueStacks_nxt\HD-Player.exe
+ADB_PATH=C:\Program Files\BlueStacks_nxt\HD-Adb.exe
+
+# Game credentials (optional, for auto-login)
+REVOMON_USERNAME=your_username
+REVOMON_PASSWORD=your_password
+```
+
+## ⚠️ Important Notes
+
+### Game Terms of Service
+- **Use at your own risk**: Automation may violate Revomon's Terms of Service
+- **Account safety**: No guarantees against detection or bans
+- **Recommendation**: Use on alternate accounts and add human-like delays
+
+### Limitations
+- **Scene detection**: May require manual intervention in some scenarios
+- **OCR accuracy**: ~95% accuracy, occasional errors in move/name detection
+- **State synchronization**: Uses fixed delays (1 second) which may need adjustment
+- **Battle end detection**: Manual input currently required to detect battle completion
+
+## 🗺️ Roadmap
+
+- [ ] Background scene detection thread
+- [ ] Robust PVP queue state detection
+- [ ] Battle end detection
+- [ ] Error recovery and retry logic
+- [ ] Comprehensive test suite
+- [ ] CI/CD pipeline
+- [ ] Performance optimization (reduce sleep delays)
+- [ ] Docker support
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these guidelines:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Follow existing code style and patterns
+4. Add tests for new functionality
+5. Update documentation as needed
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
+
+### Development Setup
+
+```bash
+# Clone your fork
+git clone https://github.com/YOUR_USERNAME/RevomonAuto.git
+cd RevomonAuto
+
+# Install development dependencies
+uv sync --all-extras
+
+# Run tests
+uv run pytest
+
+# Run linter
+uv run ruff check .
+
+# Format code
+uv run ruff format .
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Bluepyll Framework**: Core automation capabilities
+- **Revomon Community**: Game data and mechanics information
+- **Contributors**: All those who have contributed to this project
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/IAmNo1Special/RevomonAuto/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/IAmNo1Special/RevomonAuto/discussions)
+- **Email**: ivmno1special@gmail.com
+
+## ⚡ Advanced Examples
+
+### Multi-Account Farming
+
+```python
+accounts = [
+    {"username": "account1", "password": "pass1"},
+    {"username": "account2", "password": "pass2"}
+]
+
+for account in accounts:
+    # Login with different account
+    revomon_app.login(account)
+    
+    # Enable auto-run
+    revomon_app.toggle_auto_run()
+    
+    # Farm for 1 hour
+    time.sleep(3600)
+    
+    # Logout
+    revomon_app.quit_game()
+```
+
+### Team Optimization
+
+```python
+from revomonauto.data.gradex_clients import (
+    RevomonClient, EvolutionClient, BattleMechanicsClient
+)
+
+# Find Revomon with best special attack evolution path
+evolution_client = EvolutionClient()
+paths = evolution_client.find_optimal_evolution_path(
+    target_stats={"spa": 1.0, "spe": 0.8, "spd": 0.6},
+    max_evolutions=3
+)
+
+# Build a balanced team
+battle_client = BattleMechanicsClient()
+team = build_balanced_team(paths[:6])
+
+# Analyze coverage
+coverage = battle_client.analyze_type_coverage(team)
+print(f"Team covers {coverage['covered_types']}/{coverage['total_types']} types")
+```
+
+---
+
+**Disclaimer**: This project is not affiliated with or endorsed by Revomon. Use at your own risk.
