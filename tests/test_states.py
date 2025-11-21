@@ -26,8 +26,8 @@ mock_bluepyll.BluePyllApp = MagicMock
 mock_bluepyll.BluePyllController = MagicMock
 
 # Now import revomon_app
-from revomon_app import RevomonApp, requires_state  # noqa: E402
-from states import BattleState, GameState  # noqa: E402
+from revomonauto.models.revomon_app import RevomonApp, requires_state  # noqa: E402
+from revomonauto.models.states import BattleState, GameState  # noqa: E402
 
 # Use the mock AppLifecycleState locally as well
 AppLifecycleState = MockAppLifecycleState
@@ -38,13 +38,13 @@ class TestStateRefactor(unittest.TestCase):
         self.mock_controller = MagicMock()
         # Mock screens to avoid loading actual UI elements
         with (
-            patch("revomon_app.StartGameScreen"),
-            patch("revomon_app.LoginScreen"),
-            patch("revomon_app.OverworldScreen"),
-            patch("revomon_app.MainMenuScreen"),
-            patch("revomon_app.SharedScreen"),
-            patch("revomon_app.BattleScreen"),
-            patch("revomon_app.TeamBagScreen"),
+            patch("revomonauto.models.revomon_app.StartGameScreen"),
+            patch("revomonauto.models.revomon_app.LoginScreen"),
+            patch("revomonauto.models.revomon_app.OverworldScreen"),
+            patch("revomonauto.models.revomon_app.MainMenuScreen"),
+            patch("revomonauto.models.revomon_app.SharedScreen"),
+            patch("revomonauto.models.revomon_app.BattleScreen"),
+            patch("revomonauto.models.revomon_app.TeamBagScreen"),
         ):
             self.app = RevomonApp(self.mock_controller)
 
