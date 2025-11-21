@@ -54,9 +54,6 @@ class RevomonApp(BluePyllApp):
 
         # Remaining attributes that don't fit into state machines
         self.is_auto_run: Event = Event()
-        self.bluestacks_state = (
-            self.bluepyll_controller.bluestacks.bluestacks_state.current_state
-        )
         self.curr_screen = None
         self.is_mon_recalled = True
         self.tv_current_page = 1
