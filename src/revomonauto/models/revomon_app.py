@@ -666,19 +666,10 @@ class RevomonApp(BluePyllApp):
         if self.game_state == GameState.MAIN_MENU:
             wardrobe_btn = self.screens["main_menu"].elements["wardrobe_button"]
             self.bluepyll_controller.click_element(wardrobe_btn)
-            # self.game_state = GameState.WARDROBE_OPEN # Assuming we have this state or similar
+            self.game_state = GameState.WARDROBE
 
     @action
-    # @requires_state(GameState.WARDROBE_OPEN) # We don't have this state yet in GameState enum, assuming it's handled or we need to add it.
-    # For now, I'll comment out the state check or use a placeholder if I didn't add it.
-    # Looking at states.py, I didn't add WARDROBE_OPEN.
-    # I should probably add it or just use MAIN_MENU if it's an overlay?
-    # The original code had MenuState.WARDROBE_OPEN.
-    # I should check if I missed adding it to GameState.
-    # If I missed it, I should add it.
-    # For now, I'll use GameState.MAIN_MENU and assume it's a sub-menu or I'll add it later.
-    # Actually, I'll just skip the decorator for now and rely on element visibility, or add it to GameState.
-    # Let's assume I'll add it.
+    @requires_state(GameState.WARDROBE)
     def close_wardrobe(self) -> None:
         # TODO: Implement a 'set_is_wardrobe_open' method
         """
@@ -689,6 +680,7 @@ class RevomonApp(BluePyllApp):
         """
         exit_menu_btn = self.screens["main_menu"].elements["exit_menu_button"]
         self.bluepyll_controller.click_element(exit_menu_btn)
+        self.game_state = GameState.MAIN_MENU
 
     @action
     @requires_state(GameState.OVERWORLD, GameState.MAIN_MENU)
