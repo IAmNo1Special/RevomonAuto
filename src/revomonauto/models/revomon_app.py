@@ -4,7 +4,7 @@ from pathlib import Path
 from threading import Event, Thread
 from time import sleep
 
-from bluepyll import AppLifecycleState, BluePyllApp, BluePyllController
+from bluepyll import AppLifecycleState, BluePyllApp
 from PIL import Image
 
 from .action import Action, Actions, action
@@ -22,11 +22,10 @@ from .strategies import BattleStrategy, RandomMove
 class RevomonApp(BluePyllApp):
     logger = logging.getLogger(__name__)
 
-    def __init__(self, controller: BluePyllController):
+    def __init__(self):
         super().__init__(
             app_name="revomon",
             package_name="com.revomon.vr",
-            bluepyll_controller=controller,
             screens={
                 "shared": SharedScreen(),
                 "start_game": StartGameScreen(),
