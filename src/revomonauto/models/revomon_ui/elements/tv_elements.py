@@ -8,12 +8,7 @@ tv_advanced_search_button = BluePyllElement(
     label="tv_advanced_search_button",
     ele_type="button",
     og_window_size=(1920, 1080),
-    path=str(
-        BASE_DIR
-        / "assets"
-        / "tv_assets"
-        / "tv_advanced_search_button.png"
-    ),
+    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_advanced_search_button.png"),
     position=(145, 115),
     size=(90, 95),
     is_static=True,
@@ -373,9 +368,7 @@ tv_delete_this_revomon_button = BluePyllElement(
     label="tv_delete_this_revomon_button",
     ele_type="button",
     og_window_size=(1920, 1080),
-    path=str(
-        BASE_DIR / "assets" / "tv_assets" / "tv_delete_this_revomon_button.png"
-    ),
+    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_delete_this_revomon_button.png"),
     position=(990, 825),
     size=(315, 120),
     is_static=True,
@@ -423,333 +416,34 @@ tv_mon_move4_text = BluePyllElement(
     is_static=False,
 )
 
-tv_slot1_button = BluePyllElement(
-    label="tv_slot1_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot1_button.png"),
-    position=(50, 260),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
 
-tv_slot2_button = BluePyllElement(
-    label="tv_slot2_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot2_button.png"),
-    position=(195, 260),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot3_button = BluePyllElement(
-    label="tv_slot3_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot3_button.png"),
-    position=(340, 260),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot4_button = BluePyllElement(
-    label="tv_slot4_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot4_button.png"),
-    position=(485, 260),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot5_button = BluePyllElement(
-    label="tv_slot5_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot5_button.png"),
-    position=(630, 260),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot6_button = BluePyllElement(
-    label="tv_slot6_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot6_button.png"),
-    position=(775, 260),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot7_button = BluePyllElement(
-    label="tv_slot7_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot7_button.png"),
-    position=(50, 395),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot8_button = BluePyllElement(
-    label="tv_slot8_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot8_button.png"),
-    position=(195, 395),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot9_button = BluePyllElement(
-    label="tv_slot9_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot9_button.png"),
-    position=(340, 395),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot10_button = BluePyllElement(
-    label="tv_slot10_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot10_button.png"),
-    position=(485, 395),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot11_button = BluePyllElement(
-    label="tv_slot11_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot11_button.png"),
-    position=(630, 395),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot12_button = BluePyllElement(
-    label="tv_slot12_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot12_button.png"),
-    position=(775, 395),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot13_button = BluePyllElement(
-    label="tv_slot13_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot13_button.png"),
-    position=(50, 530),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot14_button = BluePyllElement(
-    label="tv_slot14_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot14_button.png"),
-    position=(195, 530),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot15_button = BluePyllElement(
-    label="tv_slot15_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot15_button.png"),
-    position=(340, 530),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot16_button = BluePyllElement(
-    label="tv_slot16_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot16_button.png"),
-    position=(485, 530),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot17_button = BluePyllElement(
-    label="tv_slot17_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot17_button.png"),
-    position=(630, 530),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot18_button = BluePyllElement(
-    label="tv_slot18_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot18_button.png"),
-    position=(775, 530),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot19_button = BluePyllElement(
-    label="tv_slot19_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot19_button.png"),
-    position=(50, 665),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot20_button = BluePyllElement(
-    label="tv_slot20_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot20_button.png"),
-    position=(195, 665),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot21_button = BluePyllElement(
-    label="tv_slot21_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot21_button.png"),
-    position=(340, 665),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot22_button = BluePyllElement(
-    label="tv_slot22_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot22_button.png"),
-    position=(485, 665),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot23_button = BluePyllElement(
-    label="tv_slot23_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot23_button.png"),
-    position=(630, 665),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot24_button = BluePyllElement(
-    label="tv_slot24_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot24_button.png"),
-    position=(775, 665),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
+def _create_tv_slot_button(slot_number: int, x: int, y: int) -> BluePyllElement:
+    return BluePyllElement(
+        label=f"tv_slot{slot_number}_button",
+        ele_type="button",
+        og_window_size=(1920, 1080),
+        path=str(
+            BASE_DIR / "assets" / "tv_assets" / f"tv_slot{slot_number}_button.png"
+        ),
+        position=(x, y),
+        size=(145, 135),
+        is_static=False,
+        confidence=0.6,
+    )
 
 
-tv_slot25_button = BluePyllElement(
-    label="tv_slot25_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot25_button.png"),
-    position=(50, 800),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
+tv_slot_buttons: dict[int, BluePyllElement] = {}
 
-tv_slot26_button = BluePyllElement(
-    label="tv_slot26_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot26_button.png"),
-    position=(195, 800),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
+_start_x = 50
+_start_y = 260
+_x_increment = 145
+_y_increment = 135
+_columns = 6
+_rows = 5
 
-tv_slot27_button = BluePyllElement(
-    label="tv_slot27_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot27_button.png"),
-    position=(340, 800),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot28_button = BluePyllElement(
-    label="tv_slot28_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot28_button.png"),
-    position=(485, 800),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot29_button = BluePyllElement(
-    label="tv_slot29_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot29_button.png"),
-    position=(630, 800),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
-
-tv_slot30_button = BluePyllElement(
-    label="tv_slot30_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(BASE_DIR / "assets" / "tv_assets" / "tv_slot30_button.png"),
-    position=(775, 800),
-    size=(145, 135),
-    is_static=False,
-    confidence=0.6,
-)
+for _row in range(_rows):
+    for _col in range(_columns):
+        _slot_num = _row * _columns + _col + 1
+        _x_pos = _start_x + (_col * _x_increment)
+        _y_pos = _start_y + (_row * _y_increment)
+        tv_slot_buttons[_slot_num] = _create_tv_slot_button(_slot_num, _x_pos, _y_pos)
