@@ -46,7 +46,13 @@ A powerful automation framework for the Revomon Android game, built on top of th
 
 We recommend using [uv](https://docs.astral.sh/uv/) for package management.
 
-### Using uv (Recommended)
+### Install as a dependency
+
+```bash
+uv add revomonauto
+```
+
+### Development Setup
 
 ```bash
 # Clone the repository
@@ -87,25 +93,25 @@ from bluepyll import BluePyllController
 from revomonauto.models.revomon_app import RevomonApp
 
 # Initialize
-controller = BluePyllController()
-revomon_app = RevomonApp(controller)
+revomon_app = RevomonApp()
+controller = BluePyllController(apps=[revomon_app])
 
 # Start BlueStacks and open app
 controller.bluestacks.open()
-revomon_app.open_revomon_app()
+controller.revomon.open_revomon_app()
 
 # Login sequence
-revomon_app.start_game()
-revomon_app.login()
+controller.revomon.start_game()
+controller.revomon.login()
 
 # Navigate menus
-revomon_app.open_main_menu()
-revomon_app.open_menu_bag()
-revomon_app.close_menu_bag()
-revomon_app.close_main_menu()
+controller.revomon.open_main_menu()
+controller.revomon.open_menu_bag()
+controller.revomon.close_menu_bag()
+controller.revomon.close_main_menu()
 
 # Enter PVP queue
-revomon_app.enter_pvp_queue()
+controller.revomon.enter_pvp_queue()
 ```
 
 ### Battle Automation
@@ -113,12 +119,12 @@ revomon_app.enter_pvp_queue()
 ```python
 # Wait for battle to start, then automate
 while True:
-    if revomon_app.is_in_battle_scene():
+    if controller.revomon.is_in_battle_scene():
         # Open attacks menu
-        revomon_app.open_attacks_menu()
+        controller.revomon.open_attacks_menu()
         
         # Choose a random move
-        revomon_app.choose_move()
+        controller.revomon.choose_move()
         
         # Or use a custom strategy
         from revomonauto.models.strategies import BattleStrategy
@@ -127,20 +133,20 @@ while True:
             def select_move(self, valid_move_names):
                 return valid_move_names[0]
         
-        revomon_app.choose_move(strategy=AlwaysFirstMove())
+        controller.revomon.choose_move(strategy=AlwaysFirstMove())
 ```
 
 ### Auto-Run from Battles
 
 ```python
 # Enable auto-run (runs from all battles automatically)
-revomon_app.toggle_auto_run()
+controller.revomon.toggle_auto_run()
 
 # Your automation continues while battles are automatically escaped
 # ...
 
 # Disable when done
-revomon_app.toggle_auto_run()
+controller.revomon.toggle_auto_run()
 ```
 
 ### Game Data Access
@@ -258,27 +264,13 @@ class SuperEffectiveStrategy(BattleStrategy):
             effectiveness = self.types_client.get_effectiveness(
                 move['type'], self.opponent_type
             )
-            if effectiveness > 1.0:
-                return move['name']
-        
-        # Fallback to first valid move
-        return valid_move_names[0]
-
-# Use your custom strategy
-revomon_app.choose_move(strategy=SuperEffectiveStrategy("grass"))
-```
-
-## 📊 Action Tracking
-
-Every automated action is tracked with full state diffs:
-
 ```python
 # Execute actions
-revomon_app.open_main_menu()
-revomon_app.enter_pvp_queue()
+controller.revomon.open_main_menu()
+controller.revomon.enter_pvp_queue()
 
 # Review action history
-for action in revomon_app.actions:
+for action in controller.revomon.actions:
     print(f"Action: {action['action_name']}")
     print(f"Status: {action['status']}")
     print(f"State changes: {action['state_diff']}")
@@ -405,16 +397,16 @@ accounts = [
 
 for account in accounts:
     # Login with different account
-    revomon_app.login(account)
+    controller.revomon.login(account)
     
     # Enable auto-run
-    revomon_app.toggle_auto_run()
+    controller.revomon.toggle_auto_run()
     
     # Farm for 1 hour
     time.sleep(3600)
     
     # Logout
-    revomon_app.quit_game()
+    controller.revomon.quit_game()
 ```
 
 ### Team Optimization
