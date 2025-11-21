@@ -7,7 +7,7 @@ from time import sleep
 from bluepyll import AppLifecycleState, BluePyllApp
 from PIL import Image
 
-from .action import Action, Actions, action
+from .action import Actions, action
 from .revomon_ui.screens.battle_screen import BattleScreen
 from .revomon_ui.screens.login_screen import LoginScreen
 from .revomon_ui.screens.main_menu_screen import MainMenuScreen
@@ -106,7 +106,7 @@ class RevomonApp(BluePyllApp):
         }
         self.opps_last_move_used = None  # {used_by: xxxx, move_name: xxxx, move_type: xxxx, starting_pp: xx, ending_pp: xx, total_pp: xx}
 
-    def get_current_state(self) -> Action:
+    def get_current_state(self) -> dict:
         """
         Returns the current state of the Revomon app.
 
