@@ -49,6 +49,7 @@ class RevomonApp(BluePyllApp):
         # self.sense_thread: Thread = Thread(target=self.update_world_state, args=(ignore_state_change_validation=True), name="revomon_app", daemon=True)
 
         # State Machines
+        self.bluestacks_state = None
         self.game_state = GameState.NOT_STARTED
         self.battle_sub_state = BattleState.IDLE
 

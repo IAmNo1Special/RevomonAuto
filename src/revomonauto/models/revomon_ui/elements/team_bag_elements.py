@@ -2,7 +2,7 @@ from pathlib import Path
 
 from bluepyll import BluePyllElement
 
-BASE_DIR = Path(__file__).parent
+BASE_DIR = Path(__file__).parent.parent
 
 change_bag_left_button = BluePyllElement(
     label="change_bag_left_button",

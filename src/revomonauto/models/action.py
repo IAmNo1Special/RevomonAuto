@@ -130,8 +130,8 @@ def action(func):
                 "current_city": get_state_value(self.current_city),
                 "current_location": get_state_value(self.current_location),
                 "bluestacks_state": get_state_value(
-                    self.bluestacks_state.current_state
-                    if hasattr(self.bluestacks_state, "current_state")
+                    self.bluepyll_controller.bluestacks.bluestacks_state.current_state
+                    if hasattr(self.bluepyll_controller.bluestacks.bluestacks_state, "current_state")
                     else None
                 ),
                 "app_state": get_state_value(
