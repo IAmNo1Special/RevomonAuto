@@ -42,6 +42,17 @@ class ReloginButton(BluePyllElement):
             ele_txt="relogin",
         )
 
+class LoginPixel(BluePyllElement):
+    def __init__(self):
+        super().__init__(
+            label="login_pixel",
+            ele_type="pixel",
+            og_window_size=(1920, 1080),
+            position=(955, 569),
+            size=(1, 1),
+            pixel_color=(71, 113, 178),
+        )
+
 
 class DisconnectButton(BluePyllElement):
     def __init__(self):
@@ -60,4 +71,38 @@ class DisconnectButton(BluePyllElement):
             is_static=True,
             confidence=0.7,
             ele_txt="disconnect",
+        )
+
+
+class DisconnectPixel(BluePyllElement):
+    def __init__(self):
+        super().__init__(
+            label="disconnect_pixel",
+            ele_type="pixel",
+            og_window_size=(1920, 1080),
+            position=(1693, 855),
+            size=(1, 1),
+            pixel_color=(224, 190, 105),
+        )
+
+class ServerSelectPixel(BluePyllElement):
+    def __init__(self):
+        super().__init__(
+            label="server_select_pixel",
+            ele_type="pixel",
+            og_window_size=(1920, 1080),
+            position=(1649, 1023),
+            size=(1, 1),
+            pixel_color=(71, 114, 176),
+        )
+
+class RevomonBadgePixel(BluePyllElement):
+    def __init__(self):
+        super().__init__(
+            label="revomon_badge_pixel",
+            ele_type="pixel",
+            og_window_size=(1920, 1080),
+            position=(964, 97),
+            size=(1, 1),
+            pixel_color=(20, 198, 255),
         )

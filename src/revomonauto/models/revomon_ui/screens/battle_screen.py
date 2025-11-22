@@ -33,3 +33,64 @@ class BattleScreen(BluePyllScreen):
                 "battle_log_image": battle_elements.battle_log_image,
             },
         )
+
+    def is_current_screen(
+        self,
+        bluepyll_controller,
+        bluepyll_screenshot: bytes | None = None,
+        phase: str = None,
+    ) -> bool:
+        """
+        Checks if the Revomon app is on the battle screen.
+
+        Args:
+            bluepyll_controller (BluePyllController): BluePyll controller instance.
+            bluepyll_screenshot (bytes | None, optional): Screenshot of the app. Defaults to None.
+
+        Returns:
+            bool: True if the app is on the battle screen, False otherwise.
+        """
+        # Battle Screen Scene
+        try:
+            bluepyll_screenshot = (
+                bluepyll_screenshot or bluepyll_controller.adb.capture_screenshot()
+            )
+        except Exception as e:
+            self.logger.error(f"Failed to capture screenshot: {e}")
+            return False
+
+        try:
+            if phase is None:
+                # Checking for the green in the Revomon name plates that appear during battle (Player1, Player2)
+                player1_mon_nameplate_pixel = self.elements[
+                    "player1_mon_nameplate_pixel"
+                ]
+                player2_mon_nameplate_pixel = self.elements[
+                    "player2_mon_nameplate_pixel"
+                ]
+                return all(
+                    [
+                        bluepyll_controller.image.check_pixel_color(
+                            target_coords=player1_mon_nameplate_pixel.center,
+                            target_color=player1_mon_nameplate_pixel.pixel_color,
+                            image=bluepyll_screenshot,
+                        ),
+                        bluepyll_controller.image.check_pixel_color(
+                            target_coords=player2_mon_nameplate_pixel.center,
+                            target_color=player2_mon_nameplate_pixel.pixel_color,
+                            image=bluepyll_screenshot,
+                        ),
+                    ]
+                )
+            elif phase == "attacks_menu":
+                exit_attacks_button_pixel = self.elements["exit_attacks_button_pixel"]
+                return bluepyll_controller.image.check_pixel_color(
+                    target_coords=exit_attacks_button_pixel.center,
+                    target_color=exit_attacks_button_pixel.pixel_color,
+                    image=bluepyll_screenshot,
+                )
+        except Exception as e:
+            self.logger.error(
+                f"Failed to check if app is on the {self.name} screen: {e}"
+            )
+            return False

@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 # Add project root to path so we can import revomon_app
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
 # Mock PIL before importing revomon_app
 sys.modules["PIL"] = MagicMock()
@@ -36,6 +36,13 @@ AppLifecycleState = MockAppLifecycleState
 class TestStateRefactor(unittest.TestCase):
     def setUp(self):
         self.mock_controller = MagicMock()
+        # Configure nested mocks explicitly to avoid TypeError when @action decorator
+        # accesses bluepyll_controller.bluestacks.bluestacks_state.current_state
+        self.mock_controller.bluestacks = MagicMock()
+        self.mock_controller.bluestacks.bluestacks_state = MagicMock()
+        self.mock_controller.bluestacks.bluestacks_state.current_state = None
+        self.mock_controller.adb = MagicMock()
+
         # Mock screens to avoid loading actual UI elements
         with (
             patch("revomonauto.models.revomon_app.StartGameScreen"),
@@ -46,7 +53,12 @@ class TestStateRefactor(unittest.TestCase):
             patch("revomonauto.models.revomon_app.BattleScreen"),
             patch("revomonauto.models.revomon_app.TeamBagScreen"),
         ):
-            self.app = RevomonApp(self.mock_controller)
+            self.app = RevomonApp()
+            self.app.bluepyll_controller = self.mock_controller
+
+        # Mock app_state to avoid TypeError when @action decorator accesses app_state.current_state
+        self.app.app_state = MagicMock()
+        self.app.app_state.current_state = None
 
         # Suppress logging during tests
         self.app.logger = MagicMock()
@@ -105,6 +117,28 @@ class TestStateRefactor(unittest.TestCase):
 
         # The method should return None when blocked
         self.assertIsNone(result)
+
+    def test_pvp_queue_logic(self):
+        # Mock wait_for_action to update is_pvp_queued based on action name
+        def mock_wait_for_action(action):
+            if action == "enter_pvp_queue":
+                self.app.is_pvp_queued = True
+            elif action == "exit_pvp_queue":
+                self.app.is_pvp_queued = False
+
+        self.app.wait_for_action = mock_wait_for_action
+
+        # Test entering and exiting PvP queue
+        self.app.game_state = GameState.MAIN_MENU
+
+        # Enter PvP Queue
+        self.app.enter_pvp_queue()
+        self.assertTrue(self.app.is_pvp_queued)
+
+        # Exit PvP Queue - need to be in a logged-in state
+        self.app.game_state = GameState.MAIN_MENU
+        self.app.exit_pvp_queue()
+        self.assertFalse(self.app.is_pvp_queued)
 
 
 if __name__ == "__main__":

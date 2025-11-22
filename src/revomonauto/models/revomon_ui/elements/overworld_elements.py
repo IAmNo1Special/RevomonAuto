@@ -65,6 +65,17 @@ class MainMenuButton(BluePyllElement):
             ele_txt="menu",
         )
 
+class MainMenuPixel(BluePyllElement):
+    def __init__(self):
+        super().__init__(
+            label="main_menu_pixel",
+            ele_type="pixel",
+            og_window_size=(1920, 1080),
+            position=(1827, 218),
+            size=(1, 1),
+            pixel_color=(214, 232, 235),
+        )
+
 class ReleaseFirstMonButton(BluePyllElement):
     def __init__(self):
         super().__init__(
@@ -84,6 +95,17 @@ class ReleaseFirstMonButton(BluePyllElement):
             ele_txt="release 1st revomon",
         )
 
+class ReleaseFirstMonPixel(BluePyllElement):
+    def __init__(self):
+        super().__init__(
+            label="release_first_mon_pixel",
+            ele_type="pixel",
+            og_window_size=(1920, 1080),
+            position=(1827, 401),
+            size=(1, 1),
+            pixel_color=(255, 255, 255),
+        )
+
 class AimShootButton(BluePyllElement):
     def __init__(self):
         super().__init__(
@@ -101,4 +123,15 @@ class AimShootButton(BluePyllElement):
             is_static=True,
             confidence=0.6,
             ele_txt="aim for wild revomon",
+        )
+
+class AimShootPixel(BluePyllElement):
+    def __init__(self):
+        super().__init__(
+            label="aim_shoot_pixel",
+            ele_type="pixel",
+            og_window_size=(1920, 1080),
+            position=(1820, 546),
+            size=(1, 1),
+            pixel_color=(254, 254, 254),
         )

@@ -57,6 +57,17 @@ class ExitMenuButton(BluePyllElement):
             confidence=0.7,
         )
 
+class ExitMenuPixel(BluePyllElement):
+    def __init__(self):
+        super().__init__(
+            label="exit_menu_pixel",
+            ele_type="pixel",
+            og_window_size=(1920, 1080),
+            position=(1857, 62),
+            size=(1, 1),
+            pixel_color=(155, 204, 233),
+        )
+
 
 class WardrobeButton(BluePyllElement):
     def __init__(self):
@@ -79,7 +90,7 @@ class WardrobeButton(BluePyllElement):
 class TeamBagMenuButton(BluePyllElement):
     def __init__(self):
         super().__init__(
-            label="team_bag_button",
+            label="team_bag_menu_button",
             ele_type="button",
             og_window_size=(1920, 1080),
             position=(780, 205),
@@ -322,4 +333,15 @@ class QuitGameButton(BluePyllElement):
             position=(30, 980),
             size=(180, 80),
             confidence=0.8,
+        )
+
+class QuitGamePixel(BluePyllElement):
+    def __init__(self):
+        super().__init__(
+            label="quit_game_pixel",
+            ele_type="pixel",
+            og_window_size=(1920, 1080),
+            position=(120, 1001),
+            size=(1, 1),
+            pixel_color=(247, 99, 99),
         )

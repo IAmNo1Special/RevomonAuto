@@ -113,7 +113,7 @@ player1_mon_nameplate_pixel = BluePyllElement(
     og_window_size=(1920, 1080),
     position=(290, 130),
     size=(1, 1),
-    pixel_color=(0, 206, 155),
+    pixel_color=(0, 199, 155),
 )
 
 player1_mon_lvl_text = BluePyllElement(
@@ -248,14 +248,6 @@ run_message_text = BluePyllElement(
     path=str(Path(__file__).parent.parent / "assets" / "battle_assets" / "run_message.png"),
     confidence=0.6,
     ele_txt="run away?",
-)
-send_to_battle_button = BluePyllElement(
-    label="send_to_battle_button",
-    ele_type="button",
-    og_window_size=(1920, 1080),
-    path=str(Path(__file__).parent.parent / "assets" / "battle_assets" / "send_to_battle_button.png"),
-    confidence=0.6,
-    ele_txt="send to battle",
 )
 
 battle_log_image = BluePyllElement(

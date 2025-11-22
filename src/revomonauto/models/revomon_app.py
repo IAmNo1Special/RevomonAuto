@@ -1,7 +1,6 @@
 import io
 import logging
 from pathlib import Path
-from threading import Event, Thread
 from time import sleep
 
 from bluepyll import AppLifecycleState, BluePyllApp
@@ -17,6 +16,20 @@ from .revomon_ui.screens.start_game_screen import StartGameScreen
 from .revomon_ui.screens.team_bag_screen import TeamBagScreen
 from .states import BattleState, GameState, requires_state
 from .strategies import BattleStrategy, RandomMove
+
+LOGGED_IN_STATES = (
+    GameState.OVERWORLD,
+    GameState.MAIN_MENU,
+    GameState.MENU_BAG,
+    GameState.WARDROBE,
+    GameState.FRIENDS_LIST,
+    GameState.SETTINGS,
+    GameState.REVODEX,
+    GameState.MARKET,
+    GameState.DISCUSSION,
+    GameState.CLAN,
+    GameState.TV,
+)
 
 
 class RevomonApp(BluePyllApp):
@@ -39,9 +52,6 @@ class RevomonApp(BluePyllApp):
 
         self.last_action = None
         self.actions = Actions()
-        self._auto_run_thread: Thread = Thread(
-            target=self.run_from_battle, daemon=True, name="GradexAgent(Auto-Run)"
-        )
 
         # TODO: Scene detection needs to be finetuned before this can be used
         # TODO: This should be ran only after it's confirm the user is logged in for the first time
@@ -54,7 +64,8 @@ class RevomonApp(BluePyllApp):
         self.battle_sub_state = BattleState.IDLE
 
         # Remaining attributes that don't fit into state machines
-        self.is_auto_run: Event = Event()
+        self.auto_run: bool = False
+        self.auto_battle: bool = False
         self.curr_screen = None
         self.is_mon_recalled = True
         self.tv_current_page = 1
@@ -63,6 +74,7 @@ class RevomonApp(BluePyllApp):
         self.tv_slot_selected_attribs = None
         self.is_grading = False
         self.is_mons_graded = False
+        self.is_pvp_queued = False
 
         self.current_city = None
         self.current_location = None
@@ -114,7 +126,7 @@ class RevomonApp(BluePyllApp):
             dict: The current state of the app.
         """
         return {
-            "current_scene": self.curr_screen,
+            "current_screen": self.curr_screen,
             "tv_current_page": self.tv_current_page,
             "tv_slot_selceted": self.tv_slot_selected,
             "tv_searching_for": self.tv_searching_for,
@@ -125,10 +137,6 @@ class RevomonApp(BluePyllApp):
             "game_state": self.game_state,
             "battle_sub_state": self.battle_sub_state,
         }
-
-    def _auto_run(self):
-        while self.is_auto_run.is_set():
-            self.run_from_battle()
 
     def extract_regions(
         self,
@@ -467,7 +475,7 @@ class RevomonApp(BluePyllApp):
             if not screenshot_bytes:
                 raise Exception("Failed to take screenshot")
 
-            if self.is_main_menu_scene():
+            if self.is_main_menu_screen():
                 self.logger.info("Closing main menu...")
                 self.close_main_menu()
                 self.logger.info("Battle over...")
@@ -505,8 +513,6 @@ class RevomonApp(BluePyllApp):
         match self.app_state.current_state:
             case AppLifecycleState.READY | AppLifecycleState.LOADING:
                 self.close()
-                # TODO: Add wait for close screen
-                # Need a method that checks if the app is closed using adb
 
     @requires_state(GameState.NOT_STARTED)
     @action
@@ -525,57 +531,34 @@ class RevomonApp(BluePyllApp):
         elif self.is_element_visible(relogin_btn):
             self.bluepyll_controller.click_element(relogin_btn)
 
-    @requires_state(GameState.OVERWORLD, GameState.PVP_QUEUE)
+    @requires_state(GameState.OVERWORLD)
     @action
     def open_main_menu(self) -> None:
         main_menu_btn = self.screens["overworld"].elements["main_menu_button"]
-        if self.is_element_visible(main_menu_btn):
-            self.bluepyll_controller.click_element(main_menu_btn)
-            self.game_state = GameState.MAIN_MENU
-            sleep(1)
+        self.bluepyll_controller.click_element(main_menu_btn)
 
     @requires_state(GameState.MAIN_MENU)
     @action
     def close_main_menu(self) -> None:
         exit_menu_btn = self.screens["main_menu"].elements["exit_menu_button"]
-        if self.is_element_visible(exit_menu_btn):
-            self.bluepyll_controller.click_element(exit_menu_btn)
-            # We don't know if we go back to OVERWORLD or PVP_QUEUE, so we rely on update_world_state or caller
-            # But for now, let's assume OVERWORLD unless specified otherwise?
-            # Actually, close_main_menu is used in enter_pvp_queue.
-            # Let's let the caller handle state update if it's specific, or we can check.
-            # For now, I'll leave state update to the caller or next detection,
-            # OR I can set it to OVERWORLD by default and let enter_pvp_queue override it.
-            # But wait, if I was in PVP_QUEUE, opened menu, and closed it, I should be in PVP_QUEUE.
-            # The previous state is not stored in GameState.
-            # I'll let the next detection or the caller handle it.
-            sleep(1)
+        self.bluepyll_controller.click_element(exit_menu_btn)
 
-    @requires_state(GameState.OVERWORLD)
+    @requires_state(GameState.MAIN_MENU, GameState.OVERWORLD)
     @action
     def enter_pvp_queue(self) -> None:
-        self.open_main_menu()
+        if self.game_state == GameState.OVERWORLD:
+            self.open_main_menu()
         pvp_btn = self.screens["main_menu"].elements["pvp_button"]
         self.bluepyll_controller.click_element(pvp_btn)
-        # TODO: need to create wait_for_pvp_queue_screen method.
-        # Current missing a way to tell if the user is or isn't in the pvp queue.
-        # self.wait_for_pvp_queue_screen()
-        sleep(1)
-        self.close_main_menu()
-        self.game_state = GameState.PVP_QUEUE
+        # TODO: Current missing a way to tell if the user is or isn't in the pvp queue.
 
-    @requires_state(GameState.PVP_QUEUE)
+    @requires_state(*LOGGED_IN_STATES)
     @action
     def exit_pvp_queue(self) -> None:
         self.open_main_menu()
         pvp_btn = self.screens["main_menu"].elements["pvp_button"]
         self.bluepyll_controller.click_element(pvp_btn)
-        # TODO: need to create wait_for method to check if the user is not in the pvp queue.
-        # Current missing a way to tell if the user is or isn't in the pvp queue.
-        # self.wait_for_...()
-        sleep(1)
-        self.close_main_menu()
-        self.game_state = GameState.OVERWORLD
+        # TODO: Current missing a way to tell if the user is or isn't in the pvp queue.
 
     @requires_state(GameState.BATTLE)
     @action
@@ -600,6 +583,7 @@ class RevomonApp(BluePyllApp):
         sleep(1)
         self.bluepyll_controller.click_coord(run_confirm_btn_pixel.center)
 
+    @requires_state(LOGGED_IN_STATES)
     @action
     def toggle_auto_run(self) -> None:
         """
@@ -609,16 +593,30 @@ class RevomonApp(BluePyllApp):
         Returns:
             None
         """
-        match self.is_auto_run.is_set():
+        match self.auto_run:
             case True:
-                self.is_auto_run.clear()
-                self._auto_run_thread.join()
+                self.auto_run = False
             case False:
-                self.is_auto_run.set()
-                self._auto_run_thread.start()
+                self.auto_run = True
 
+    @requires_state(LOGGED_IN_STATES)
     @action
+    def toggle_auto_battle(self) -> None:
+        """
+        Toggles the auto battle feature.
+        Auto battle feature automatically decides whether to run from battle or engage in battle.
+
+        Returns:
+            None
+        """
+        match self.auto_battle:
+            case True:
+                self.auto_battle = False
+            case False:
+                self.auto_battle = True
+
     @requires_state(GameState.OVERWORLD, GameState.MAIN_MENU)
+    @action
     def open_menu_bag(self) -> None:
         """
         Opens the menu bag if it is not already open.
@@ -630,9 +628,8 @@ class RevomonApp(BluePyllApp):
             self.open_main_menu()
 
         if self.game_state == GameState.MAIN_MENU:
-            team_bag_btn = self.screens["main_menu"].elements["team_bag_button"]
+            team_bag_btn = self.screens["main_menu"].elements["team_bag_menu_button"]
             self.bluepyll_controller.click_element(team_bag_btn)
-            self.game_state = GameState.MENU_BAG
 
     @requires_state(GameState.MENU_BAG)
     @action
@@ -665,8 +662,8 @@ class RevomonApp(BluePyllApp):
             self.bluepyll_controller.click_element(wardrobe_btn)
             self.game_state = GameState.WARDROBE
 
-    @action
     @requires_state(GameState.WARDROBE)
+    @action
     def close_wardrobe(self) -> None:
         # TODO: Implement a 'set_is_wardrobe_open' method
         """
@@ -679,8 +676,8 @@ class RevomonApp(BluePyllApp):
         self.bluepyll_controller.click_element(exit_menu_btn)
         self.game_state = GameState.MAIN_MENU
 
-    @action
     @requires_state(GameState.OVERWORLD, GameState.MAIN_MENU)
+    @action
     def recall_revomon(self) -> None:
         # TODO: Implement a 'set_is_mon_recalled' method
         """
@@ -696,8 +693,8 @@ class RevomonApp(BluePyllApp):
             recall_btn = self.screens["main_menu"].elements["recall_button"]
             self.bluepyll_controller.click_element(recall_btn)
 
-    @action
     @requires_state(GameState.OVERWORLD, GameState.MAIN_MENU)
+    @action
     def open_friends_list(self) -> None:
         """
         Opens the friends list if it is not already open.
@@ -726,8 +723,8 @@ class RevomonApp(BluePyllApp):
         self.bluepyll_controller.click_element(exit_menu_btn)
         self.game_state = GameState.MAIN_MENU
 
-    @action
     @requires_state(GameState.OVERWORLD, GameState.MAIN_MENU)
+    @action
     def open_settings(self) -> None:
         """
         Opens the settings if it is not already open.
@@ -756,8 +753,8 @@ class RevomonApp(BluePyllApp):
         self.bluepyll_controller.click_element(exit_menu_btn)
         self.game_state = GameState.MAIN_MENU
 
-    @action
     @requires_state(GameState.OVERWORLD, GameState.MAIN_MENU)
+    @action
     def open_revodex(self) -> None:
         """
         Opens the revodex if it is not already open.
@@ -786,8 +783,8 @@ class RevomonApp(BluePyllApp):
         self.bluepyll_controller.click_element(exit_menu_btn)
         self.game_state = GameState.MAIN_MENU
 
-    @action
     @requires_state(GameState.OVERWORLD, GameState.MAIN_MENU)
+    @action
     def open_market(self) -> None:
         """
         Opens the market if it is not already open.
@@ -816,8 +813,8 @@ class RevomonApp(BluePyllApp):
         self.bluepyll_controller.click_element(exit_menu_btn)
         self.game_state = GameState.MAIN_MENU
 
-    @action
     @requires_state(GameState.OVERWORLD, GameState.MAIN_MENU)
+    @action
     def open_discussion(self) -> None:
         """
         Opens the discussion if it is not already open.
@@ -846,8 +843,8 @@ class RevomonApp(BluePyllApp):
         self.bluepyll_controller.click_element(exit_menu_btn)
         self.game_state = GameState.MAIN_MENU
 
-    @action
     @requires_state(GameState.OVERWORLD, GameState.MAIN_MENU)
+    @action
     def open_clan(self) -> None:
         """
         Opens the clan menu if it is not already open.
@@ -876,8 +873,8 @@ class RevomonApp(BluePyllApp):
         self.bluepyll_controller.click_element(exit_menu_btn)
         self.game_state = GameState.MAIN_MENU
 
-    @action
     @requires_state(GameState.BATTLE)
+    @action
     def open_attacks_menu(self) -> None:
         """
         Opens the attacks menu if it is not already open.
@@ -891,8 +888,8 @@ class RevomonApp(BluePyllApp):
         self.bluepyll_controller.click_element(attacks_btn)
         self.battle_sub_state = BattleState.ATTACKS_MENU_OPEN
 
-    @action
     @requires_state(GameState.BATTLE)
+    @action
     def choose_move(self, strategy: BattleStrategy | None = None) -> None:
         """
         Chooses a move to use in battle using the provided strategy.
@@ -910,69 +907,76 @@ class RevomonApp(BluePyllApp):
         """
         try:
             # Default to RandomMove if no strategy provided
-            if strategy is None:
-                strategy = RandomMove()
+            if self.auto_run is True:
+                self.run_from_battle()
+                return "ran from battle"
+            if self.auto_battle is True:
+                self.open_attacks_menu()
 
-            # Get all valid moves (non-None names with PP > 0)
-            valid_moves = [
-                move
-                for move in self.mon_on_field["moves"]
-                if move.get("name") is not None
-                and move.get("pp", {}).get("current", 0) > 0
-            ]
+                if strategy is None:
+                    strategy = RandomMove()
 
-            # Early exit if no valid moves
-            if not valid_moves:
-                raise RuntimeError(
-                    "No valid moves found (all moves have 0 PP or None names)"
-                )
-
-            valid_move_names = [move["name"] for move in valid_moves]
-            if not valid_move_names:
-                raise RuntimeError("No valid moves available for selection")
-
-            # Use strategy to select move
-            move_name = strategy.select_move(valid_move_names)
-
-            # Verify the selected move is valid
-            if move_name not in valid_move_names:
-                raise ValueError(
-                    f"Strategy selected invalid move '{move_name}'. Valid moves: {valid_move_names}"
-                )
-
-            # Find the original index from the full moves list for UI clicking
-            try:
-                original_index = next(
-                    i
-                    for i, move in enumerate(self.mon_on_field["moves"])
-                    if move.get("name") == move_name
-                )
-            except StopIteration:
-                raise RuntimeError(f"Failed to find move in moves list: {move_name}")
-
-            move_button_keys = [
-                "player1_mon_move1_button",
-                "player1_mon_move2_button",
-                "player1_mon_move3_button",
-                "player1_mon_move4_button",
-            ]
-
-            if 0 <= original_index < len(move_button_keys):
-                move_btn = self.screens["battle"].elements[
-                    move_button_keys[original_index]
+                # Get all valid moves (non-None names with PP > 0)
+                valid_moves = [
+                    move
+                    for move in self.mon_on_field["moves"]
+                    if move.get("name") is not None
+                    and move.get("pp", {}).get("current", 0) > 0
                 ]
-                self.bluepyll_controller.click_element(move_btn)
-            else:
-                raise RuntimeError(
-                    f"Move index {original_index} out of range for move: {move_name}"
-                )
 
+                # Early exit if no valid moves
+                if not valid_moves:
+                    raise RuntimeError(
+                        "No valid moves found (all moves have 0 PP or None names)"
+                    )
+
+                valid_move_names = [move["name"] for move in valid_moves]
+                if not valid_move_names:
+                    raise RuntimeError("No valid moves available for selection")
+
+                # Use strategy to select move
+                move_name = strategy.select_move(valid_move_names)
+
+                # Verify the selected move is valid
+                if move_name not in valid_move_names:
+                    raise ValueError(
+                        f"Strategy selected invalid move '{move_name}'. Valid moves: {valid_move_names}"
+                    )
+
+                # Find the original index from the full moves list for UI clicking
+                try:
+                    original_index = next(
+                        i
+                        for i, move in enumerate(self.mon_on_field["moves"])
+                        if move.get("name") == move_name
+                    )
+                except StopIteration:
+                    raise RuntimeError(f"Failed to find move in moves list: {move_name}")
+
+                move_button_keys = [
+                    "player1_mon_move1_button",
+                    "player1_mon_move2_button",
+                    "player1_mon_move3_button",
+                    "player1_mon_move4_button",
+                ]
+
+                if 0 <= original_index < len(move_button_keys):
+                    move_btn = self.screens["battle"].elements[
+                        move_button_keys[original_index]
+                    ]
+                    self.bluepyll_controller.click_element(move_btn)
+                    return move_name
+                else:
+                    raise RuntimeError(
+                        f"Move index {original_index} out of range for move: {move_name}"
+                    )
+            sleep(1)
         except Exception as e:
             self.logger.error(f"Error in choose_move: {str(e)}")
             raise  # Re-raise the exception after logging
 
-    @action
     @requires_state(GameState.BATTLE)
+    @action
     def close_attacks_menu(self) -> None:
         """
         Closes the attacks menu if it is open.
@@ -985,8 +989,8 @@ class RevomonApp(BluePyllApp):
         self.bluepyll_controller.click_element(exit_attacks_btn)
         self.battle_sub_state = BattleState.IDLE
 
-    @action
     @requires_state(GameState.BATTLE)
+    @action
     def open_battle_bag(self) -> None:
         """
         Opens the battle bag if it is not already open.
@@ -999,8 +1003,8 @@ class RevomonApp(BluePyllApp):
         self.bluepyll_controller.click_element(battle_bag_btn)
         self.battle_sub_state = BattleState.BAG_OPEN
 
-    @action
     @requires_state(GameState.BATTLE)
+    @action
     def close_battle_bag(self) -> None:
         """
         Closes the battle bag if it is open.
@@ -1013,8 +1017,8 @@ class RevomonApp(BluePyllApp):
         self.bluepyll_controller.click_element(exit_menu_btn)
         self.battle_sub_state = BattleState.IDLE
 
-    @action
     @requires_state(GameState.OVERWORLD)
+    @action
     def open_tv(self) -> None:
         """
         Opens the TV if it is not already open.
@@ -1027,8 +1031,8 @@ class RevomonApp(BluePyllApp):
         self.bluepyll_controller.click_element(tv_screen_button, times=2)
         self.game_state = GameState.TV
 
-    @action
     @requires_state(GameState.TV)
+    @action
     def close_tv(self) -> None:
         """
         Closes the TV if it is open.
@@ -1041,8 +1045,8 @@ class RevomonApp(BluePyllApp):
         self.bluepyll_controller.click_element(tv_exit_button)
         self.game_state = GameState.OVERWORLD
 
-    @action
     @requires_state(GameState.TV)
+    @action
     def tv_search_for_revomon(self, revomon_name: str) -> None:
         # TODO: Implement a 'set_is_searching_for_mon' method
         """
@@ -1064,8 +1068,8 @@ class RevomonApp(BluePyllApp):
         self.bluepyll_controller.click_element(tv_search_button)
         self.mon_searching_for = revomon_name
 
-    @action
     @requires_state(GameState.TV)
+    @action
     def select_tv_slot(self, slot_number: int) -> None:
         # TODO: Implement a 'set_is_mon_selected' method
         """
@@ -1087,8 +1091,8 @@ class RevomonApp(BluePyllApp):
             self.tv_slot_selected = slot_number - 1
             self.is_mon_selected = True
 
-    @action
     @requires_state(GameState.OVERWORLD, GameState.MAIN_MENU)
+    @action
     def quit_game(self) -> None:
         """
         Quits the game if the user is logged in and not in battle.
@@ -1110,6 +1114,7 @@ class RevomonApp(BluePyllApp):
         new_app_state: AppLifecycleState | None = None,
         new_game_state: GameState | None = None,
         new_battle_sub_state: BattleState | None = None,
+        bluepyll_screenshot: bytes | None = None,
         ignore_state_change_validation: bool = False,
     ) -> None:
 
@@ -1138,155 +1143,163 @@ class RevomonApp(BluePyllApp):
 
         if not any([new_app_state, new_game_state, new_battle_sub_state]):
             self.logger.info("No state changes provided.")
-            self.logger.info("Scanning for current scene...")
+            self.logger.info("Scanning for current screen...")
+            screenshot_bytes = (
+                bluepyll_screenshot or self.bluepyll_controller.adb.capture_screenshot()
+            )
             if any(
                 [
-                    self.is_start_game_scene(True),
-                    self.is_login_scene(True),
-                    self.is_overworld_scene(True),
-                    self.is_tv_scene(True),
-                    self.is_menu_bag_scene(True),
-                    self.is_battle_bag_scene(True),
-                    self.is_main_menu_scene(True),
-                    self.is_in_battle_scene(True),
-                    self.is_attacks_menu_scene(True),
+                    self.is_start_game_screen(
+                        bluepyll_screenshot=screenshot_bytes,
+                        ignore_state_change_validation=True,
+                    ),
+                    self.is_login_screen(
+                        bluepyll_screenshot=screenshot_bytes,
+                        ignore_state_change_validation=True,
+                    ),
+                    self.is_overworld_screen(
+                        bluepyll_screenshot=screenshot_bytes,
+                        ignore_state_change_validation=True,
+                    ),
+                    self.is_tv_screen(
+                        bluepyll_screenshot=screenshot_bytes,
+                        ignore_state_change_validation=True,
+                    ),
+                    self.is_team_bag_screen(
+                        bluepyll_screenshot=screenshot_bytes,
+                        ignore_state_change_validation=True,
+                    ),
+                    self.is_main_menu_screen(
+                        bluepyll_screenshot=screenshot_bytes,
+                        ignore_state_change_validation=True,
+                    ),
+                    self.is_on_battle_screen(
+                        bluepyll_screenshot=screenshot_bytes,
+                        ignore_state_change_validation=True,
+                    ),
+                    self.is_attacks_menu_screen(
+                        bluepyll_screenshot=screenshot_bytes,
+                        ignore_state_change_validation=True,
+                    ),
                 ]
             ):
-                self.logger.info("Current scene detected. World state updated.")
-                self.logger.info(f"Detected scene: {self.curr_screen}")
+                self.logger.info("Current screen detected. World state updated.")
+                self.logger.info(f"Detected screen: {self.curr_screen}")
             else:
                 self.logger.info("New World State initialized.")
 
-    def is_start_game_scene(
+    def is_start_game_screen(
         self,
+        bluepyll_screenshot: bytes | None = None,
         ignore_state_change_validation: bool = False,
     ) -> bool:
         """
-        Checks if the Revomon app is in the start game scene(app open and loaded).
+        Checks if the Revomon app is on the start game screen.
         Passing this check means the app is open and loaded.
 
         Args:
+            bluepyll_screenshot (bytes | None, optional): Screenshot of the app. Defaults to None.
             ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
-            bool: True if the app is in the start game scene, False otherwise.
+            bool: True if the app is on the start game screen, False otherwise.
         """
         # Start Game Screen Scene
-        try:
-            start_game_button = self.screens["start_game"].elements["start_game_button"]
-            match self.is_element_visible(start_game_button):
-                case True:
-                    self.update_world_state(
-                        new_app_state=AppLifecycleState.READY,
-                        new_game_state=GameState.NOT_STARTED,
-                        new_battle_sub_state=BattleState.IDLE,
-                        ignore_state_change_validation=ignore_state_change_validation,
-                    )
-                    self.curr_screen = "start_game"
-                    return True
-                case _:
-                    return False
+        match self.screens["start_game"].is_current_screen(
+            bluepyll_controller=self.bluepyll_controller,
+            bluepyll_screenshot=bluepyll_screenshot,
+        ):
+            case True:
+                self.update_world_state(
+                    new_app_state=AppLifecycleState.READY,
+                    new_game_state=GameState.NOT_STARTED,
+                    new_battle_sub_state=BattleState.IDLE,
+                    ignore_state_change_validation=ignore_state_change_validation,
+                )
+                self.curr_screen = "start_game"
+                return True
+            case _:
+                return False
 
-        except Exception as e:
-            raise Exception(f"error during ' is_start_game_scene': {e}")
-
-    def is_login_scene(
+    def is_login_screen(
         self,
+        bluepyll_screenshot: bytes | None = None,
         ignore_state_change_validation: bool = False,
     ) -> bool:
         """
-        Checks if the Revomon app is in the login scene(app open, loaded and started).
+        Checks if the Revomon app is on the login screen.
         Passing this check means the app is open, loaded and started.
 
         Args:
+            bluepyll_screenshot (bytes | None, optional): Screenshot of the app. Defaults to None.
             ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
-            bool: True if the app is in the login scene, False otherwise.
+            bool: True if the app is on the login screen, False otherwise.
         """
         # Login Screen Scene
-        try:
-            login_button = self.screens["login"].elements["login_button"]
-            match self.is_element_visible(login_button):
-                case True:
-                    self.update_world_state(
-                        new_app_state=AppLifecycleState.READY,
-                        new_game_state=GameState.STARTED,
-                        new_battle_sub_state=BattleState.IDLE,
-                        ignore_state_change_validation=ignore_state_change_validation,
-                    )
-                    self.curr_screen = "login"
-                    return True
-                case _:
-                    relogin_button = self.screens["login"].elements["relogin_button"]
-                    match self.is_element_visible(relogin_button):
-                        case True:
-                            self.update_world_state(
-                                new_app_state=AppLifecycleState.READY,
-                                new_game_state=GameState.STARTED,
-                                new_battle_sub_state=BattleState.IDLE,
-                                ignore_state_change_validation=ignore_state_change_validation,
-                            )
-                            self.curr_screen = "login"
-                            return True
-                        case _:
-                            return False
+        match self.screens["login"].is_current_screen(
+            bluepyll_controller=self.bluepyll_controller,
+            bluepyll_screenshot=bluepyll_screenshot,
+        ):
+            case True:
+                self.update_world_state(
+                    new_app_state=AppLifecycleState.READY,
+                    new_game_state=GameState.STARTED,
+                    new_battle_sub_state=BattleState.IDLE,
+                    ignore_state_change_validation=ignore_state_change_validation,
+                )
+                self.curr_screen = "login"
+                return True
+            case _:
+                return False
 
-        except Exception as e:
-            raise Exception(f"error during 'is_login_scene': {e}")
-
-    def is_overworld_scene(
+    def is_overworld_screen(
         self,
+        bluepyll_screenshot: bytes | None = None,
         ignore_state_change_validation: bool = False,
     ) -> bool:
         """
-        Checks if the Revomon app is in the overworld scene(no menu's are open and not in any battle).
+        Checks if the Revomon app is on the overworld screen(no menu's are open and not in any battle).
         Passing this check means the app is open, loaded, started and the User is logged in.
 
         Args:
+            bluepyll_screenshot (bytes | None, optional): Screenshot of the app. Defaults to None.
             ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
-            bool: True if the app is in the overworld scene, False otherwise.
+            bool: True if the app is on the overworld screen, False otherwise.
         """
         # Overworld Screen Scene
-        try:
-            main_menu_button = self.screens["overworld"].elements["main_menu_button"]
-            match self.is_element_visible(main_menu_button):
-                case True:
-                    # Preserve PVP_QUEUE state if we are already in it
-                    new_game_state = (
-                        GameState.PVP_QUEUE
-                        if self.game_state == GameState.PVP_QUEUE
-                        else GameState.OVERWORLD
-                    )
-                    self.update_world_state(
-                        new_app_state=AppLifecycleState.READY,
-                        new_game_state=new_game_state,
-                        new_battle_sub_state=BattleState.IDLE,
-                        ignore_state_change_validation=ignore_state_change_validation,
-                    )
-                    self.curr_screen = "overworld"
-                    return True
-                case _:
-                    return False
+        match self.screens["overworld"].is_current_screen(
+            bluepyll_controller=self.bluepyll_controller,
+            bluepyll_screenshot=bluepyll_screenshot,
+        ):
+            case True:
+                self.update_world_state(
+                    new_app_state=AppLifecycleState.READY,
+                    new_game_state=GameState.OVERWORLD,
+                    new_battle_sub_state=BattleState.IDLE,
+                    ignore_state_change_validation=ignore_state_change_validation,
+                )
+                self.curr_screen = "overworld"
+                return True
+            case _:
+                return False
 
-        except Exception as e:
-            raise Exception(f"error during 'is_overworld_scene': {e}")
-
-    def is_tv_scene(
+    def is_tv_screen(
         self,
         ignore_state_change_validation: bool = False,
     ) -> bool:
         """
-        Checks if the Revomon app is in the TV scene(TV is open).
+        Checks if the Revomon app is on the TV screen(TV is open).
         Passing this check means the app is open, loaded, started, the User is logged in and the TV is open.
 
         Args:
             ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
-            bool: True if the app is in the TV scene, False otherwise.
+            bool: True if the app is on the TV screen, False otherwise.
         """
         try:
             tv_advanced_search_button = self.screens["tv_advanced_search"].elements[
@@ -1306,220 +1319,166 @@ class RevomonApp(BluePyllApp):
                     return False
 
         except Exception as e:
-            raise Exception(f"error during 'is_tv_scene': {e}")
+            raise Exception(f"error during 'is_tv_screen': {e}")
 
-    def is_menu_bag_scene(
+    def is_team_bag_screen(
         self,
+        bluepyll_screenshot: bytes | None = None,
         ignore_state_change_validation: bool = False,
     ) -> bool:
         """
-        Checks if the Revomon app is in the menu bag scene(menu bag is open).
-        Passing this check means the app is open, loaded, started, the User is logged in and the menu bag is open.
+        Checks if the Revomon app is on the team bag screen(team bag is open).
+        Passing this check means the app is open, loaded, started, the User is logged in and the team bag is open.
 
         Args:
+            bluepyll_screenshot (bytes | None, optional): Screenshot of the app. Defaults to None.
             ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
-            bool: True if the app is in the menu bag scene, False otherwise.
+            bool: True if the app is on the team bag screen, False otherwise.
         """
         try:
-            change_bag_left_button = self.screens["team_bag"].elements[
-                "change_bag_left_button"
-            ]
-            change_bag_right_button = self.screens["team_bag"].elements[
-                "change_bag_right_button"
-            ]
-            match (
-                self.is_element_visible(change_bag_left_button),
-                self.is_element_visible(change_bag_right_button),
+            match self.screens["team_bag"].is_current_screen(
+                bluepyll_controller=self.bluepyll_controller,
+                bluepyll_screenshot=bluepyll_screenshot,
             ):
-                case (True, True):
-                    self.update_world_state(
-                        new_app_state=AppLifecycleState.READY,
-                        new_game_state=GameState.MENU_BAG,
-                        new_battle_sub_state=BattleState.IDLE,
-                        ignore_state_change_validation=ignore_state_change_validation,
-                    )
-                    self.curr_screen = "menu_bag"
-                    return True
+                case True:
+                    print(self.game_state)
+                    if self.game_state == GameState.BATTLE:
+                        print("Team battle bag screen detected")
+                        self.update_world_state(
+                            new_app_state=AppLifecycleState.READY,
+                            new_game_state=GameState.BATTLE,
+                            new_battle_sub_state=BattleState.BAG_OPEN,
+                            ignore_state_change_validation=ignore_state_change_validation,
+                        )
+                        self.curr_screen = "battle_bag"
+                        return True
+                    elif self.game_state == GameState.MAIN_MENU:
+                        print("Team menu bag screen detected")
+                        self.update_world_state(
+                            new_app_state=AppLifecycleState.READY,
+                            new_game_state=GameState.MENU_BAG,
+                            new_battle_sub_state=BattleState.IDLE,
+                            ignore_state_change_validation=ignore_state_change_validation,
+                        )
+                        self.curr_screen = "menu_bag"
+                        return True
                 case _:
                     return False
 
         except Exception as e:
-            raise Exception(f"error during 'is_menu_bag_scene': {e}")
+            raise Exception(f"error during 'is_team_bag_screen': {e}")
 
-    def is_battle_bag_scene(
+    def is_main_menu_screen(
         self,
-        ignore_state_change_validation: bool = False,
-    ) -> bool:
-        # TODO: Currently is same check as menu bag scene as the bag ui appears to be the same. Update to check for battle bag ui specific elements.
-        """
-        Checks if the Revomon app is in the battle bag scene(battle bag is open).
-        Passing this check means the app is open, loaded, started, the User is logged in, in a battle and the battle bag is open.
-
-        Args:
-            ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
-
-        Returns:
-            bool: True if the app is in the battle bag scene, False otherwise.
-        """
-        try:
-            change_bag_left_button = self.screens["team_bag"].elements[
-                "change_bag_left_button"
-            ]
-            change_bag_right_button = self.screens["team_bag"].elements[
-                "change_bag_right_button"
-            ]
-            match (
-                self.is_element_visible(change_bag_left_button),
-                self.is_element_visible(change_bag_right_button),
-            ):
-                case (True, True):
-                    self.update_world_state(
-                        new_app_state=AppLifecycleState.READY,
-                        new_game_state=GameState.BATTLE,
-                        new_battle_sub_state=BattleState.BAG_OPEN,
-                        ignore_state_change_validation=ignore_state_change_validation,
-                    )
-                    self.curr_screen = "battle_bag"
-                    return True
-                case _:
-                    return False
-
-        except Exception as e:
-            raise Exception(f"error during 'is_battle_bag_scene': {e}")
-
-    def is_main_menu_scene(
-        self,
+        bluepyll_screenshot: bytes | None = None,
         ignore_state_change_validation: bool = False,
     ) -> bool:
         """
-        Checks if the Revomon app is in the main menu scene(main menu is open).
+        Checks if the Revomon app is on the main menu screen(main menu is open).
         Passing this check means the app is open, loaded, started, the User is logged in and the main menu is open.
 
         Args:
+            bluepyll_screenshot (bytes | None, optional): The screenshot to check. Defaults to None.
             ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
-            bool: True if the app is in the main menu scene, False otherwise.
+            bool: True if the app is on the main menu screen, False otherwise.
         """
-        try:
-            pvp_button = self.screens["main_menu"].elements["pvp_button"]
-            match self.is_element_visible(pvp_button):
-                case True:
-                    self.update_world_state(
-                        new_app_state=AppLifecycleState.READY,
-                        new_game_state=GameState.MAIN_MENU,
-                        new_battle_sub_state=BattleState.IDLE,
-                        ignore_state_change_validation=ignore_state_change_validation,
-                    )
-                    self.curr_screen = "main_menu"
-                    return True
-                case _:
-                    return False
+        match self.screens["main_menu"].is_current_screen(
+            bluepyll_controller=self.bluepyll_controller,
+            bluepyll_screenshot=bluepyll_screenshot,
+        ):
+            case True:
+                self.update_world_state(
+                    new_app_state=AppLifecycleState.READY,
+                    new_game_state=GameState.MAIN_MENU,
+                    new_battle_sub_state=BattleState.IDLE,
+                    ignore_state_change_validation=ignore_state_change_validation,
+                )
+                self.curr_screen = "main_menu"
+                return True
+            case _:
+                return False
 
-        except Exception as e:
-            raise Exception(f"error during 'is_main_menu_scene': {e}")
-
-    def is_in_battle_scene(
+    def is_on_battle_screen(
         self,
+        bluepyll_screenshot: bytes | None = None,
         ignore_state_change_validation: bool = False,
     ) -> bool:
         """
-        Checks if the Revomon app is in the in battle scene(User in battle).
+        Checks if the Revomon app is on the in battle screen(User in battle).
         Passing this check means the app is open, loaded, started, the User is logged in, in a battle and the battle bag is closed.
 
         Args:
+            bluepyll_screenshot (bytes | None, optional): The screenshot to check. Defaults to None.
             ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
-            bool: True if the app is in the in battle scene, False otherwise.
+            bool: True if the app is on the in battle screen, False otherwise.
         """
-        try:
-            # Checking for the green in the Revomon name plates that appear during battle (Player1, Player2)
-            screenshot = self.bluepyll_controller.adb.capture_screenshot()
-            player1_mon_nameplate_pixel = self.screens["battle"].elements[
-                "player1_mon_nameplate_pixel"
-            ]
-            player2_mon_nameplate_pixel = self.screens["battle"].elements[
-                "player2_mon_nameplate_pixel"
-            ]
-            match (
-                self.bluepyll_controller.image.check_pixel_color(
-                    target_coords=player1_mon_nameplate_pixel.center,
-                    target_color=player1_mon_nameplate_pixel.pixel_color,
-                    image=screenshot,
-                    tolerance=10,
-                ),
-                self.bluepyll_controller.image.check_pixel_color(
-                    target_coords=player2_mon_nameplate_pixel.center,
-                    target_color=player2_mon_nameplate_pixel.pixel_color,
-                    image=screenshot,
-                    tolerance=10,
-                ),
-            ):
-                case (True, True):
-                    self.update_world_state(
-                        new_app_state=AppLifecycleState.READY,
-                        new_game_state=GameState.BATTLE,
-                        new_battle_sub_state=BattleState.IDLE,
-                        ignore_state_change_validation=ignore_state_change_validation,
-                    )
-                    self.curr_screen = "in_battle"
-                    self.extract_battle_info()
-                    return True
-                case _:
-                    return False
+        match self.screens["battle"].is_current_screen(
+            bluepyll_controller=self.bluepyll_controller,
+            bluepyll_screenshot=bluepyll_screenshot,
+        ):
+            case True:
+                self.update_world_state(
+                    new_app_state=AppLifecycleState.READY,
+                    new_game_state=GameState.BATTLE,
+                    new_battle_sub_state=BattleState.IDLE,
+                    ignore_state_change_validation=ignore_state_change_validation,
+                )
 
-        except Exception as e:
-            self.logger.error(f"Error getting battle info(is_in_battle_scene): {e}")
-            return False
+                self.curr_screen = "in_battle"
+                self.extract_battle_info()
+                return True
+            case _:
+                return False
 
-    def is_attacks_menu_scene(
-        self, ignore_state_change_validation: bool = False
+    def is_attacks_menu_screen(
+        self,
+        bluepyll_screenshot: bytes | None = None,
+        ignore_state_change_validation: bool = False,
     ) -> bool:
         """
-        Checks if the Revomon app is in the attacks menu scene(attacks menu is open).
+        Checks if the Revomon app is on the attacks menu screen(attacks menu is open).
         Passing this check means the app is open, loaded, started, the User is logged in, in a battle and the attacks menu is open.
 
         Args:
+            bluepyll_screenshot (bytes | None, optional): The screenshot to check. Defaults to None.
             ignore_state_change_validation (bool, optional): Whether to ignore state change validation. Defaults to False.
 
         Returns:
-            bool: True if the app is in the attacks menu scene, False otherwise.
+            bool: True if the app is on the attacks menu screen, False otherwise.
         """
-        try:
-            screenshot = self.bluepyll_controller.adb.capture_screenshot()
-            exit_attacks_button_pixel = self.screens["battle"].elements[
-                "exit_attacks_button_pixel"
-            ]
-            match self.bluepyll_controller.image.check_pixel_color(
-                target_coords=exit_attacks_button_pixel.center,
-                target_color=exit_attacks_button_pixel.pixel_color,
-                image=screenshot,
-                tolerance=5,
-            ):
-                case True:
-                    self.update_world_state(
-                        new_app_state=AppLifecycleState.READY,
-                        new_game_state=GameState.BATTLE,
-                        new_battle_sub_state=BattleState.ATTACKS_MENU_OPEN,
-                        ignore_state_change_validation=ignore_state_change_validation,
-                    )
-                    self.curr_screen = "attacks_menu"
-                    self.extract_battle_moves()
-                    return True
-                case _:
-                    return False
-
-        except Exception as e:
-            raise Exception(f"Error setting is_attacks_menu_scene(): {e}")
+        match self.screens["battle"].is_current_screen(
+            bluepyll_controller=self.bluepyll_controller,
+            bluepyll_screenshot=bluepyll_screenshot,
+            phase="attacks_menu",
+        ):
+            case True:
+                self.update_world_state(
+                    new_app_state=AppLifecycleState.READY,
+                    new_game_state=GameState.BATTLE,
+                    new_battle_sub_state=BattleState.ATTACKS_MENU_OPEN,
+                    ignore_state_change_validation=ignore_state_change_validation,
+                )
+                self.curr_screen = "attacks_menu"
+                self.extract_battle_moves()
+                return True
+            case _:
+                return False
 
     def is_waiting_for_opponent(
-        self, ignore_state_change_validation: bool = False
+        self,
+        bluepyll_screenshot: bytes | None = None,
+        ignore_state_change_validation: bool = False,
     ) -> bool:
         try:
-            screenshot_bytes = self.bluepyll_controller.adb.capture_screenshot()
+            screenshot_bytes = (
+                bluepyll_screenshot or self.bluepyll_controller.adb.capture_screenshot()
+            )
             waiting_for_opponent_text = self.screens["battle"].elements[
                 "waiting_for_opponent_text"
             ]
@@ -1548,7 +1507,7 @@ class RevomonApp(BluePyllApp):
                             new_battle_sub_state=BattleState.WAITING_FOR_OPPONENT,
                             ignore_state_change_validation=ignore_state_change_validation,
                         )
-                        self.curr_screen = "waiting_for_opponent"
+                        self.curr_screen = "battle"
                         return True
             return False
         except Exception as e:
@@ -1558,20 +1517,19 @@ class RevomonApp(BluePyllApp):
         try:
             while True:
                 self.logger.info(f"Waiting for {action} action to complete...")
+                screenshot_bytes = self.bluepyll_controller.adb.capture_screenshot()
                 match action:
                     case "open_revomon_app":
-                        match self.is_start_game_scene():
+                        match self.is_start_game_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 self.logger.info("Revomon app opened successfully.")
                                 return
-                            case False:
-                                continue
                     case "close_revomon_app":
                         match self.bluepyll_controller.adb.is_app_running(
                             app=self, timeout=10, wait_time=10
                         ):
-                            case True:
-                                continue
                             case False:
                                 self.update_world_state(
                                     new_app_state=AppLifecycleState.CLOSED,
@@ -1582,104 +1540,129 @@ class RevomonApp(BluePyllApp):
                                 self.logger.info("Revomon app closed successfully.")
                                 return
                     case "start_game":
-                        match self.is_login_scene():
+                        match self.is_login_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 self.logger.info("Game started successfully.")
                                 return
                             case False:
                                 continue
                     case "login":
-                        match self.is_overworld_scene():
+                        match self.is_overworld_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
                                         continue
                     case "open_main_menu":
-                        match self.is_main_menu_scene():
+                        match self.is_main_menu_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_login_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
                                                 continue
                     case "close_main_menu":
-                        match self.is_overworld_scene():
+                        match self.is_overworld_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
+                                print("-->Main menu closed successfully.")
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_login_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
                                                 continue
                     case "enter_pvp_queue":
                         # TODO: Implement a way to tell if user is/isn't in pvp queue. For now, just assume the user joined the queue successfully.
-                        self.update_world_state(
-                            new_app_state=AppLifecycleState.READY,
-                            new_game_state=GameState.PVP_QUEUE,
-                            new_battle_sub_state=BattleState.IDLE,
-                        )
-                        self.curr_screen = "overworld"
+                        self.is_pvp_queued = True
+                        self.logger.info("Entered PvP Queue successfully.")
                         return
                     case "exit_pvp_queue":
                         # TODO: Implement a way to tell if user is/isn't in pvp queue. For now, just assume the user exited the queue successfully.
-                        self.update_world_state(
-                            new_app_state=AppLifecycleState.READY,
-                            new_game_state=GameState.OVERWORLD,
-                            new_battle_sub_state=BattleState.IDLE,
-                        )
-                        self.curr_screen = "overworld"
+                        self.is_pvp_queued = False
+                        self.logger.info("Exited PvP Queue successfully.")
                         return
+
                     case "toggle_auto_run":
                         return
                     case "run_from_battle":
-                        match self.is_overworld_scene():
+                        match self.is_overworld_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
-                            case False:
-                                match self.is_login_scene():
-                                    case True:
-                                        return
-                                    case False:
-                                        continue
+                        match self.is_login_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
+                            case True:
+                                return
                     case "open_menu_bag":
-                        match self.is_menu_bag_scene():
+                        match self.is_team_bag_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_login_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
                                                 continue
                     case "close_menu_bag":
-                        match self.is_main_menu_scene():
+                        match self.is_main_menu_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_login_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
@@ -1694,15 +1677,21 @@ class RevomonApp(BluePyllApp):
                         self.curr_screen = "wardrobe_menu"
                         return
                     case "close_wardrobe":
-                        match self.is_main_menu_scene():
+                        match self.is_main_menu_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_login_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
@@ -1720,15 +1709,21 @@ class RevomonApp(BluePyllApp):
                         self.curr_screen = "friends_list_menu"
                         return
                     case "close_friends_list":
-                        match self.is_main_menu_scene():
+                        match self.is_main_menu_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_login_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
@@ -1742,15 +1737,21 @@ class RevomonApp(BluePyllApp):
                         self.curr_screen = "settings_menu"
                         return
                     case "close_settings":
-                        match self.is_main_menu_scene():
+                        match self.is_main_menu_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_login_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
@@ -1764,15 +1765,21 @@ class RevomonApp(BluePyllApp):
                         self.curr_screen = "revodex_menu"
                         return
                     case "close_revodex":
-                        match self.is_main_menu_scene():
+                        match self.is_main_menu_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_login_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
@@ -1786,15 +1793,21 @@ class RevomonApp(BluePyllApp):
                         self.curr_screen = "market_menu"
                         return
                     case "close_market":
-                        match self.is_main_menu_scene():
+                        match self.is_main_menu_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_login_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
@@ -1808,15 +1821,21 @@ class RevomonApp(BluePyllApp):
                         self.curr_screen = "discussion_menu"
                         return
                     case "close_discussion":
-                        match self.is_main_menu_scene():
+                        match self.is_main_menu_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_login_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
@@ -1830,137 +1849,184 @@ class RevomonApp(BluePyllApp):
                         self.curr_screen = "clan_menu"
                         return
                     case "close_clan":
-                        match self.is_main_menu_scene():
+                        match self.is_main_menu_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_login_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
                                                 continue
                     case "open_attacks_menu":
-                        match self.is_attacks_menu_scene():
+                        match self.is_attacks_menu_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_login_scene():
+                                match self.is_login_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
                                         continue
                     case "choose_move":
-                        while self.is_waiting_for_opponent():
-                            sleep(0.5)
-                        match self.is_overworld_scene():
+                        match self.is_waiting_for_opponent(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
+                            case True:
+                                sleep(0.5)
+                                continue
+                        match self.is_overworld_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 self.logger.info("Opening main menu...")
                                 self.open_main_menu()
                                 self.logger.info("Extracting battle log...")
                                 self.extract_battle_log()
                                 return
-                            case False:
-                                match self.is_in_battle_scene():
-                                    case True:
-                                        self.logger.info("Extracting battle log...")
-                                        self.extract_battle_log()
-                                        return
-                                    case False:
-                                        match self.is_login_scene():
-                                            case True:
-                                                return
-                                            case False:
-                                                continue
+                        match self.is_on_battle_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
+                            case True:
+                                self.logger.info("Extracting battle log...")
+                                self.extract_battle_log()
+                                return
+                        match self.is_login_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
+                            case True:
+                                return
+                        continue
                     case "close_attacks_menu":
-                        match self.is_in_battle_scene():
+                        match self.is_on_battle_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_login_scene():
+                                match self.is_login_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
                                         continue
                     case "open_battle_bag":
-                        match self.is_battle_bag_scene():
+                        match self.is_team_bag_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_login_scene():
+                                match self.is_login_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
                                         continue
                     case "close_battle_bag":
-                        match self.is_in_battle_scene():
+                        match self.is_on_battle_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_login_scene():
+                                match self.is_login_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
                                         continue
                     case "open_available_bag":
-                        match self.is_menu_bag_scene():
+                        match self.is_team_bag_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_battle_bag_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_in_battle_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
-                                                match self.is_login_scene():
-                                                    case True:
-                                                        return
-                                                    case False:
-                                                        continue
+                                                continue
                     case "close_available_bag":
-                        match self.is_main_menu_scene():
+                        match self.is_team_bag_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_login_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
                                                 continue
                     case "open_tv":
-                        match self.is_tv_scene():
+                        match self.is_tv_screen(bluepyll_screenshot=screenshot_bytes):
                             case True:
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_login_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
                                                 continue
                     case "close_tv":
-                        match self.is_overworld_scene():
+                        match self.is_overworld_screen(
+                            bluepyll_screenshot=screenshot_bytes
+                        ):
                             case True:
                                 return
                             case False:
-                                match self.is_in_battle_scene():
+                                match self.is_on_battle_screen(
+                                    bluepyll_screenshot=screenshot_bytes
+                                ):
                                     case True:
                                         return
                                     case False:
-                                        match self.is_login_scene():
+                                        match self.is_login_screen(
+                                            bluepyll_screenshot=screenshot_bytes
+                                        ):
                                             case True:
                                                 return
                                             case False:
